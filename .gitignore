@@ -13,3 +13,7 @@ __pycache__
 venv/*
 .vscode
 site/
+# ignore files copied in from awx-operator
+Dockerfile
+requirements.yml
+watches.yaml

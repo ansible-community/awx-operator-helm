@@ -331,6 +331,10 @@ helm-chart: helm-chart-generate
 
 .PHONY: helm-chart-generate
 helm-chart-generate: kustomize helm kubectl-slice yq charts
+
+	@echo "== Clone the AWX Operator repository =="
+	python clone-awx-operator.py
+
 	@echo "== KUSTOMIZE: Set image and chart label =="
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd config/manager && $(KUSTOMIZE) edit set label helm.sh/chart:$(CHART_NAME)
@@ -356,10 +360,6 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 		$(KUBECTL_SLICE) --input-file=- \
 			--output-dir=charts/$(CHART_NAME)/raw-files \
 			--sort-by-kind
-
-	@echo "== GIT: Reset kustomize configs =="
-	# reset kustomize configs following kustomize build
-	git checkout -f config/.
 
 	@echo "== Build Templates and CRDS =="
 	# Delete metadata.namespace, release namespace will be automatically inserted by helm
