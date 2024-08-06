@@ -1,118 +1,371 @@
-# project-template
-[![Discuss on Matrix at #community:ansible.com](https://img.shields.io/matrix/community:ansible.com.svg?server_fqdn=ansible-accounts.ems.host&label=Discuss%20on%20Matrix%20at%20%23community:ansible.com&logo=matrix)](https://matrix.to/#/#community:ansible.com)
-[![Codecov badge](https://img.shields.io/codecov/c/github/ansible-community/project-template)](https://codecov.io/gh/ansible-community/project-template)
+# AWX Operator Helm Chart
 
-A GitHub repository template for new Ansible projects.
+This chart installs the AWX Operator resources configured in [this](https://github.com/ansible/awx-operator) repository.
 
-This template gives you the basic recommended (and in some instances required) files for your new Ansible community project.
+## Getting Started
+To configure your AWX resource using this chart, create your own `yaml` values file. The name is up to personal preference since it will explicitly be passed into the helm chart. Helm will merge whatever values you specify in your file with the default `values.yaml`, overriding any settings you've changed while allowing you to fall back on defaults. Because of this functionality, `values.yaml` should not be edited directly.
 
-## Template structure
+In your values config, enable `AWX.enabled` and add `AWX.spec` values based on the awx operator's [documentation](https://github.com/ansible/awx-operator/blob/devel/README.md). Consult the docs below for additional functionality.
 
-This template includes sample files for the following:
-- [Content in docs/](https://github.com/ansible-community/project-template/tree/main/docs) - A docsite template for your project that you are encouraged to use to provide a consistent experience to users and contributors across Ansible ecosystem projects. A website built from this template with [mkdocs](https://www.mkdocs.org/) is available on [ReadTheDocs](https://ansible.readthedocs.io/projects/ansible-project-template/en/latest/).
-- [README.md](README.md) - This file. It should describe the project and list the documentation site, when available, and how to reach the project team (Matrix room, if available and Ansible forum tags). 
-- [LICENSE.md](LICENSE.md) - The project license. We recommend GPLv3.
-- [CONTRIBUTING.md](CONTRIBUTING.md) - The basics for contributing to your project. If your project has a docsite, refer to the docsite contributor guide from this CONTRIBUTING.md file.
-- [SECURITY.md](SECURITY.md) - (optional) How to report security issues for your project.
-- [CODE-OF-CONDUCT.md](CODE-OF-CONDUCT.md) - A link to the Ansible code of conduct. Do not change this.
-- [DCO](DCO) - The Developer Certificate of Origin. Do not modify this text.
+### Installing
 
-## Contributing to this template
+The operator's [helm install](https://ansible.readthedocs.io/projects/awx-operator/en/latest/installation/helm-install-on-existing-cluster.html) guide provides key installation instructions.
 
-You can open a GitHub issue to request changes or directly open a PR for small changes or enhancements.
+Example:
 
-# README.md template
+```bash
+helm install my-awx-operator awx-operator/awx-operator -n awx --create-namespace -f myvalues.yaml
+```
 
-> Make sure the following sections are present in your project's `README.md`
+Argument breakdown:
+* `-f` passes in the file with your custom values
+* `-n` sets the namespace to be installed in
+  * This value is accessed by `{{ $.Release.Namespace }}` in the templates
+  * Acts as the default namespace for all unspecified resources
+* `--create-namespace` specifies that helm should create the namespace before installing
 
-## Our mission
+To update an existing installation, use `helm upgrade` instead of `install`. The rest of the syntax remains the same.
 
-> Put you mission statement in here. Example follows.
+### Caveats on upgrading existing installation
 
-At the `your project name`, our mission is to produce and maintain simple, flexible,
-and powerful open-source software tailored to `your project purpose`.
+There is no support at this time for upgrading or deleting CRDs using Helm.  See [helm documentation](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations) for additional detail.
 
-We welcome members from all skill levels to participate actively in our open, inclusive, and vibrant community.
-Whether you are an expert or just beginning your journey with Ansible and `your project name`,
-you are encouraged to contribute, share insights, and collaborate with fellow enthusiasts!
+When upgrading to releases with CRD changes use the following command to update the CRDs
 
-## Code of Conduct
+```bash
+kubectl apply --server-side -k github.com/ansible/awx-operator/config/crd?ref=<VERSION>
+```
 
-> If your project doesn't belong to GitHub orgs controlled by Red Hat, refer to a CoC violation complaint raising mechanism relevant to your project.
+If running above command results in an error like below:
 
-We follow the [Ansible Code of Conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html) in all our interactions within this project.
+```text
+Apply failed with 1 conflict: conflict with "helm" using apiextensions.k8s.io/v1: .spec.versions
+Please review the fields above--they currently have other managers. Here
+are the ways you can resolve this warning:
+* If you intend to manage all of these fields, please re-run the apply
+  command with the `--force-conflicts` flag.
+* If you do not intend to manage all of the fields, please edit your
+  manifest to remove references to the fields that should keep their
+  current managers.
+* You may co-own fields by updating your manifest to match the existing
+  value; in this case, you'll become the manager if the other manager(s)
+  stop managing the field (remove it from their configuration).
+See https://kubernetes.io/docs/reference/using-api/server-side-apply/#conflicts
+```
 
-If you encounter abusive behavior violating the [Ansible Code of Conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html), please refer to the [policy violations](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html#policy-violations) section of the Code of Conduct for information on how to raise a complaint.
+Use `--force-conflicts` flag to resolve the conflict.
 
-## Communication
+```bash
+kubectl apply --server-side --force-conflicts -k github.com/ansible/awx-operator/config/crd?ref=<VERSION>
+```
 
-> If your project has a docsite, this section should refer to a corresponding docsite section that contains the following information as on the [docsite index template page](https://github.com/ansible-community/project-template/blob/main/docs/index.md).
+## Configuration
+The goal of adding helm configurations is to abstract out and simplify the creation of multi-resource configs. The `AWX.spec` field maps directly to the spec configs of the `AWX` resource that the operator provides, which are detailed in the [main README](https://github.com/ansible/awx-operator/blob/devel/README.md). Other sub-config can be added with the goal of simplifying more involved setups that require additional resources to be specified.
 
-> If your project is not present on the Ansible forum yet, please check out the existing [tags](https://forum.ansible.com/tags) and [groups](https://forum.ansible.com/g) - use what suits the project. If there is no appropritate tag and group yet, please [request one](https://forum.ansible.com/t/requesting-a-forum-group/503/17).
+These sub-headers aim to be a more intuitive entrypoint into customizing your deployment, and are easier to manage in the long-term. By design, the helm templates will defer to the manually defined specs to avoid configuration conflicts. For example, if `AWX.spec.postgres_configuration_secret` is being used, the `AWX.postgres` settings will not be applied, even if enabled.
 
-* Join the Ansible forum:
-    * [Get Help](https://forum.ansible.com/c/help/6): get help or help others.
-    * [Posts tagged with 'your tag'](https://forum.ansible.com/tag/YOUR_TAG): subscribe to participate in project-related conversations.
-    * [Refer to your forum group here if exists](https://forum.ansible.com/g/): by joining the team you will automatically get subscribed to the posts tagged with [your group forum tag here](https://forum.ansible.com/tags).
-    * [Social Spaces](https://forum.ansible.com/c/chat/4): gather and interact with fellow enthusiasts.
-    * [News & Announcements](https://forum.ansible.com/c/news/5): track project-wide announcements including social events.
+### External Postgres
+The `AWX.postgres` section simplifies the creation of the external postgres secret. If enabled, the configs provided will automatically be placed in a `postgres-config` secret and linked to the `AWX` resource. For proper secret management, the `AWX.postgres.password` value, and any other sensitive values, can be passed in at the command line rather than specified in code. Use the `--set` argument with `helm install`. Supplying the password this way is not recommended for production use, but may be helpful for initial PoC.
 
-* The Ansible [Bullhorn newsletter](https://docs.ansible.com/ansible/devel/community/communication.html#the-bullhorn): used to announce releases and important changes.
+### Additional Kubernetes Resources
+The `AWX.extraDeploy` section allows the creation of additional Kubernetes resources. This simplifies setups requiring additional objects that are used by AWX, e.g. using `ExternalSecrets` to create Kubernetes secrets.
 
-For more information about communication, see the [Ansible communication guide](https://docs.ansible.com/ansible/devel/community/communication.html).
+Resources are passed as an array, either as YAML or strings (literal "|"). The resources are passed through `tpl`, so templating is possible. Example:
 
-## Contributing to this project
+```yaml
+AWX:
+  # enable use of awx-deploy template
+  ...
 
-### How to open an issue
+  # configurations for external postgres instance
+  postgres:
+    enabled: false
+    ...
 
-If you want to report a bug or request a new feature, please:
-1. Search in the [issues](https://github.com/ORG/REPO/issues) for similar reports/requests.
-2. If there are already no such issues, open a new one by clicking the `New issue` button.
+extraDeploy:
+  - |
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: {{ .Release.Name }}-postgres-secret-string-example
+      namespace: {{ .Release.Namespace }}
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      secretStoreRef:
+        name: vault
+        kind: ClusterSecretStore
+      refreshInterval: "1h"
+      target:
+        name: postgres-configuration-secret-string-example
+        creationPolicy: "Owner"
+        deletionPolicy: "Delete"
+      dataFrom:
+        - extract:
+            key: awx/postgres-configuration-secret
 
-### Contributor guidelines
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: "{{ .Release.Name }}-postgres-secret-yaml-example"
+      namespace: "{{ .Release.Namespace }}"
+      labels:
+        app: "{{ .Release.Name }}"
+    spec:
+      secretStoreRef:
+        name: vault
+        kind: ClusterSecretStore
+      refreshInterval: "1h"
+      target:
+        name: postgres-configuration-secret-yaml-example
+        creationPolicy: "Owner"
+        deletionPolicy: "Delete"
+      dataFrom:
+        - extract:
+            key: awx/postgres-configuration-secret
+```
 
-> Use one source of truth: it can be a contributing section on project docsite or CONTRIBUTING.md. If you have a docsite, use it.
+### Custom secrets
+The `customSecrets` section simplifies the creation of our custom secrets used during AWX deployment. Supplying the passwords this way is not recommended for production use, but may be helpful for initial PoC.
 
-To learn how to contribute to this project, see the [Contributor guidelines](https://link-to-docsite-or-contributor.md).
+If enabled, the configs provided will automatically used to create the respective secrets and linked at the CR spec level. For proper secret management, the sensitive values can be passed in at the command line rather than specified in code. Use the `--set` argument with `helm install`.
 
-### Getting started development guide
+Example:
 
-> If the project doesn't have the guide, please add it to mitigate the entry threshold for new contributors. If it's not applicable, remove  the section.
+```yaml
+AWX:
+  # enable use of awx-deploy template
+  ...
 
-Do you have a fix and want to submit a ready-for-merge pull request? See the [Getting started development guide](https://link-to-the-quide).
+  # configurations for external postgres instance
+  postgres:
+    enabled: false
+    ...
 
-## Releasing
+  customSecrets:
+    enabled: true
+    admin:
+      enabled: true
+      password: mysuperlongpassword
+      secretName: my-admin-password
+    secretKey:
+      enabled: true
+      key: supersecuresecretkey
+      secretName: my-awx-secret-key
+    ingressTls:
+      enabled: true
+      selfSignedCert: true
+      key: unset
+      certificate: unset
+    routeTls:
+      enabled: false
+      key: <contentoftheprivatekey>
+      certificate: <contentofthepublickey>
+    ldapCacert:
+      enabled: false
+      crt: <contentofmybundlecacrt>
+    ldap:
+      enabled: true
+      password: yourldapdnpassword
+    bundleCacert:
+      enabled: false
+      crt: <contentofmybundlecacrt>
+    eePullCredentials:
+      enabled: false
+      url: unset
+      username: unset
+      password: unset
+      sslVerify: true
+      secretName: my-ee-pull-credentials
+    cpPullCredentials:
+      enabled: false
+      dockerconfig:
+        - registry: https://index.docker.io/v1/
+          username: unset
+          password: unset
+      secretName: my-cp-pull-credentials
+```
 
-> Please replace the content in the sub-sections below with information relevant to your project.
+### Custom volumes
+The `customVolumes` section simplifies the creation of Persistent Volumes used when you want to store your databases and projects files on the cluster's Node. Since their backends are `hostPath`, the size specified are just like a label and there is no actual capacity limitation.
 
-> If you have the same information covered on the project docsite, refer to the corresponding docsite pages instead. 
+You have to prepare directories for these volumes. For example:
 
-### Versioning specification
+```bash
+sudo mkdir -p /data/postgres-13
+sudo mkdir -p /data/projects
+sudo chmod 755 /data/postgres-13
+sudo chown 1000:0 /data/projects
+```
 
-To determine a software version number when releasing, this project uses the [Semantic Versioning Specification](https://semver.org/) to convey meaning about what has been modified from one version to the next.
+Example:
 
-### Release policy & maintenance timeline
+```yaml
+AWX:
+  # enable use of awx-deploy template
+  ...
 
-> Describe your release policy and maintenance timeline in this section or refer to a corresponding docsite page.
+  # configurations for external postgres instance
+  postgres:
+    enabled: false
+    ...
 
-We maintain each major release version (1.x.y, 2.x.y,...) for two years after the next major version is released.
+  customVolumes:
+    postgres:
+      enabled: true
+      hostPath: /data/postgres-13
+    projects:
+      enabled: true
+      hostPath: /data/projects
+      size: 1Gi
+```
 
-Here is the table for the support timeline:
+## Values Summary
 
-- `1.x.y`: released 2020-11-17, EOL
-- `2.x.y`: released 2022-02-10, supported until 2025-06-09
-- `3.x.y`: released 2023-06-09, current
+### AWX
+| Value | Description | Default |
+|---|---|---|
+| `AWX.enabled` | Enable this AWX resource configuration | `false` |
+| `AWX.name` | The name of the AWX resource and default prefix for other resources | `"awx"` |
+| `AWX.spec` | specs to directly configure the AWX resource | `{}` |
+| `AWX.postgres` | configurations for the external postgres secret | - |
 
-### Release notes
+### extraDeploy
+| Value | Description | Default |
+|---|---|---|
+| `extraDeploy` | array of additional resources to be deployed (supports YAML or literal "\|") | - |
 
-> Embed a link to a project changelog into here.
+### Operator
+| Value | Description | Default |
+|---|---|---|
+| `Operator.replicas` | Number of controller-manager instance replicas | `1` |
 
-For release notes, see the [changelog]().
+### customSecrets
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.enabled` | Enable the secret resources configuration | `false` |
+| `customSecrets.admin` | Configurations for the secret that contains the admin user password | - |
+| `customSecrets.secretKey` | Configurations for the secret that contains the symmetric key for encryption | - |
+| `customSecrets.ingressTls` | Configurations for the secret that contains the TLS information when `ingress_type=ingress` | - |
+| `customSecrets.routeTls` |  Configurations for the secret that contains the TLS information when `ingress_type=route` (`route_tls_secret`) | - |
+| `customSecrets.ldapCacert` | Configurations for the secret that contains the LDAP Certificate Authority | - |
+| `customSecrets.ldap` | Configurations for the secret that contains the LDAP BIND DN password | - |
+| `customSecrets.bundleCacert` | Configurations for the secret that contains the Certificate Authority | - |
+| `customSecrets.eePullCredentials` | Configurations for the secret that contains the pull credentials for registered ees can be found | - |
+| `customSecrets.cpPullCredentials` | Configurations for the secret that contains the image pull credentials for app and database containers | - |
 
-## Governance
 
-> Update this section with relevant information and URLs. If the project has a docsite, include this information in the docsite.
+Below the addition variables to customize the secret configuration.
 
-The process of decision making in this project is based on discussing and finding consensus among participants.
+#### Admin user password secret configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.admin.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.admin.password` | Admin user password | - |
+| `customSecrets.admin.secretName` | Name of secret for `admin_password_secret` | `<resourcename>-admin-password>` |
 
-We, [Refer to your forum group here](https://forum.ansible.com/g/YOUR-GROUP), use [the forum](https://forum.ansible.com/tag/YOUR-TAG) posts tagged with `TAGNAME` for general announcements and discussions. If you have something on your mind, just create a [post](https://forum.ansible.com/new-topic?title=topic%20title&body=topic%20body&category=project&tags=YOUR-TAG) and let's find the best solution together!
+#### Secret Key secret configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.secretKey.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.secretKey.key` | Key is used to encrypt sensitive data in the database | - |
+| `customSecrets.secretKey.secretName` | Name of secret for `secret_key_secret` | `<resourcename>-secret-key` |
+
+#### Ingress TLS secret configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.ingressTls.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.ingressTls.selfSignedCert` | If `true`, an self-signed TLS certificate for `AWX.spec.hostname` will be create by helm | `false` |
+| `customSecrets.ingressTls.key` | Private key to use for TLS/SSL | - |
+| `customSecrets.ingressTls.certificate` | Certificate to use for TLS/SSL | - |
+| `customSecrets.ingressTls.secretName` | Name of secret for `ingress_tls_secret` | `<resourcename>-ingress-tls` |
+| `customSecrets.ingressTls.labels` | Array of labels for the secret | - |
+
+#### Route TLS secret configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.routeTls.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.routeTls.key` | Private key to use for TLS/SSL | - |
+| `customSecrets.routeTls.certificate` | Certificate to use for TLS/SSL | - |
+| `customSecrets.routeTls.secretName` | Name of secret for `route_tls_secret` | `<resourcename>-route-tls` |
+
+#### LDAP Certificate Authority secret configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.ldapCacert.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.ldapCacert.crt` | Bundle of CA Root Certificates | - |
+| `customSecrets.ldapCacert.secretName` | Name of secret for `ldap_cacert_secret` | `<resourcename>-custom-certs` |
+
+#### LDAP BIND DN Password secret configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.ldap.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.ldap.password` | LDAP BIND DN password | - |
+| `customSecrets.ldap.secretName` | Name of secret for `ldap_password_secret` | `<resourcename>-ldap-password` |
+
+#### Certificate Authority secret configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.bundleCacert.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.bundleCacert.crt` | Bundle of CA Root Certificates | - |
+| `customSecrets.bundleCacert.secretName` | Name of secret for `bundle_cacert_secret` | `<resourcename>-custom-certs` |
+
+#### Default EE pull secrets configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.eePullCredentials.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.eePullCredentials.url` | Registry url | - |
+| `customSecrets.eePullCredentials.username` | Username to connect as | - |
+| `customSecrets.eePullCredentials.password` | Password to connect with | - |
+| `customSecrets.eePullCredentials.sslVerify` | Whether verify ssl connection or not. | `true` |
+| `customSecrets.eePullCredentials.secretName` | Name of secret for `ee_pull_credentials_secret` | `<resourcename>-ee-pull-credentials` |
+
+#### Control Plane pull secrets configuration
+| Value | Description | Default |
+|---|---|---|
+| `customSecrets.cpPullCredentials.enabled` | If `true`, secret will be created | `false` |
+| `customSecrets.cpPullCredentials.dockerconfig` | Array of configurations for the Docker credentials that are used for accessing a registry | - |
+| `customSecrets.cpPullCredentials.dockerconfig[].registry` | Server location for Docker registry | `https://index.docker.io/v1/` |
+| `customSecrets.cpPullCredentials.dockerconfig[].username` | Username to connect as | - |
+| `customSecrets.cpPullCredentials.dockerconfig[].password` | Password to connect with | - |
+| `customSecrets.cpPullCredentials.secretName` |  Name of secret for `image_pull_secrets`| `<resoucename>-cp-pull-credentials` |
+
+### customVolumes
+
+#### Persistent Volume for databases postgres
+| Value | Description | Default |
+|---|---|---|
+| `customVolumes.postgres.enabled` | Enable the PV resource configuration for the postgres databases | `false` |
+| `customVolumes.postgres.hostPath` | Directory location on host | - |
+| `customVolumes.postgres.size` | Size of the volume | `8Gi` |
+| `customVolumes.postgres.accessModes` | Volume access mode | `ReadWriteOnce` |
+| `customVolumes.postgres.storageClassName` | PersistentVolume storage class name for `postgres_storage_class` | `<resourcename>-postgres-volume` |
+
+#### Persistent Volume for projects files
+| Value | Description | Default |
+|---|---|---|
+| `customVolumes.projects.enabled` | Enable the PVC and PVC resources configuration for the projects files | `false` |
+| `customVolumes.projects.hostPath` | Directory location on host | - |
+| `customVolumes.projects.size` |  Size of the volume | `8Gi` |
+| `customVolumes.projects.accessModes` | Volume access mode | `ReadWriteOnce` |
+| `customVolumes.postgres.storageClassName` | PersistentVolume storage class name | `<resourcename>-projects-volume` |
+
+# Contributing
+
+## Adding abstracted sections
+Where possible, defer to `AWX.spec` configs before applying the abstracted configs to avoid collision. This can be facilitated by the `(hasKey .spec what_i_will_abstract)` check.
+
+## Building and Testing
+This chart is built using the Makefile in the [awx-operator repo](https://github.com/ansible/awx-operator). Clone the repo and run `make helm-chart`. This will create the awx-operator chart in the `charts/awx-operator` directory. In this process, the contents of the `.helm/starter` directory will be added to the chart.
+
+## Future Goals
+All values under the `AWX` header are focused on configurations that use the operator. Configurations that relate to the Operator itself could be placed under an `Operator` heading, but that may add a layer of complication over current development.
+
+
+# Chart Publishing
+
+The chart is currently hosted on the gh-pages branch of the repo. During the release pipeline, the `index.yaml` stored in that branch is generated with helm chart entries from all valid tags. We are currently unable to use the `chart-releaser` pipeline due to the fact that the complete helm chart is not committed to the repo and is instead built during the release process. Therefore, the cr action is unable to compare against previous versions.
+
+Instead of CR, we use `helm repo index` to generate an index from all locally pulled chart versions. Since we build from scratch every time, the timestamps of all entries will be updated. This could be improved by using yq or something similar to detect which tags are already in the index.yaml file, and only merge in tags that are not present.
+
+Not using CR could be addressed in the future by keeping the chart built as a part of releases, as long as CR compares the chart to previous release packages rather than previous commits. If the latter is the case, then we would not have the necessary history for comparison.
