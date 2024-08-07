@@ -59,6 +59,7 @@ def main(args: Args) -> None:
 
     keep_files = [
         "Dockerfile",
+        "Makefile",
         "requirements.yml",
         "watches.yaml",
     ]
@@ -85,7 +86,10 @@ def main(args: Args) -> None:
 
         for keep_file in keep_files:
             src = pathlib.Path(temp_dir, keep_file)
-            dst = pathlib.Path.cwd() / keep_file
+            if keep_file == 'Makefile':
+                dst = pathlib.Path.cwd() / "Makefile.awx-operator"
+            else:
+                dst = pathlib.Path.cwd() / keep_file
 
             print(f"Updating {keep_file!r} ...", file=sys.stderr, flush=True)
 
