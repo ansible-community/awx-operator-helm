@@ -17,4 +17,3 @@ site/
 Dockerfile
 requirements.yml
 watches.yaml
-Makefile.awx-operator
