@@ -18,6 +18,55 @@ CHART_BRANCH ?= gh-pages
 CHART_DIR ?= gh-pages
 CHART_INDEX ?= index.yaml
 
+.PHONY: kustomize
+KUSTOMIZE = $(shell pwd)/bin/kustomize
+kustomize: ## Download kustomize locally if necessary.
+ifeq (,$(wildcard $(KUSTOMIZE)))
+ifeq (,$(shell which kustomize 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(KUSTOMIZE)) ;\
+	curl -sSLo - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v5.0.1/kustomize_v5.0.1_$(OS)_$(ARCHA).tar.gz | \
+	tar xzf - -C bin/ ;\
+	}
+else
+KUSTOMIZE = $(shell which kustomize)
+endif
+endif
+
+.PHONY: kubectl-slice
+KUBECTL_SLICE = $(shell pwd)/bin/kubectl-slice
+kubectl-slice: ## Download kubectl-slice locally if necessary.
+ifeq (,$(wildcard $(KUBECTL_SLICE)))
+ifeq (,$(shell which kubectl-slice 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(KUBECTL_SLICE)) ;\
+	curl -sSLo - https://github.com/patrickdappollonio/kubectl-slice/releases/download/v1.2.6/kubectl-slice_$(OS)_$(ARCHX).tar.gz | \
+	tar xzf - -C bin/ kubectl-slice ;\
+	}
+else
+KUBECTL_SLICE = $(shell which kubectl-slice)
+endif
+endif
+
+.PHONY: yq
+YQ = $(shell pwd)/bin/yq
+yq: ## Download yq locally if necessary.
+ifeq (,$(wildcard $(YQ)))
+ifeq (,$(shell which yq 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(HELM)) ;\
+	curl -sSLo - https://github.com/mikefarah/yq/releases/download/v4.20.2/yq_$(OS)_$(ARCHA).tar.gz | \
+	tar xzf - -C bin/ ;\
+	mv bin/yq_$(OS)_$(ARCHA) bin/yq ;\
+	}
+else
+YQ = $(shell which yq)
+endif
+endif
+
 .PHONY: helm
 HELM = $(shell pwd)/bin/helm
 helm: ## Download helm locally if necessary.
