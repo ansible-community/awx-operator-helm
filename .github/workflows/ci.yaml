@@ -15,6 +15,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+
+      - name: Output Python info
+        run: python --version && which python
+
+      - name: Clone ansible/awx-operator
+        run: python ./clone-awx-operator.py
+
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.10.0
 
