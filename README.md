@@ -3,13 +3,14 @@
 This chart installs the AWX Operator resources configured in [this](https://github.com/ansible/awx-operator) repository.
 
 ## Getting Started
+
 To configure your AWX resource using this chart, create your own `yaml` values file. The name is up to personal preference since it will explicitly be passed into the helm chart. Helm will merge whatever values you specify in your file with the default `values.yaml`, overriding any settings you've changed while allowing you to fall back on defaults. Because of this functionality, `values.yaml` should not be edited directly.
 
 In your values config, enable `AWX.enabled` and add `AWX.spec` values based on the awx operator's [documentation](https://github.com/ansible/awx-operator/blob/devel/README.md). Consult the docs below for additional functionality.
 
 ### Installing
 
-The operator's [helm install](https://ansible.readthedocs.io/projects/awx-operator/en/latest/installation/helm-install-on-existing-cluster.html) guide provides key installation instructions.
+To install the `awx-operator` chart, visit the [chart usage guide](https://ansible-community.github.io/awx-operator-helm/).
 
 Example:
 
@@ -18,6 +19,7 @@ helm install my-awx-operator awx-operator/awx-operator -n awx --create-namespace
 ```
 
 Argument breakdown:
+
 * `-f` passes in the file with your custom values
 * `-n` sets the namespace to be installed in
   * This value is accessed by `{{ $.Release.Namespace }}` in the templates
@@ -60,14 +62,17 @@ kubectl apply --server-side --force-conflicts -k github.com/ansible/awx-operator
 ```
 
 ## Configuration
+
 The goal of adding helm configurations is to abstract out and simplify the creation of multi-resource configs. The `AWX.spec` field maps directly to the spec configs of the `AWX` resource that the operator provides, which are detailed in the [main README](https://github.com/ansible/awx-operator/blob/devel/README.md). Other sub-config can be added with the goal of simplifying more involved setups that require additional resources to be specified.
 
 These sub-headers aim to be a more intuitive entrypoint into customizing your deployment, and are easier to manage in the long-term. By design, the helm templates will defer to the manually defined specs to avoid configuration conflicts. For example, if `AWX.spec.postgres_configuration_secret` is being used, the `AWX.postgres` settings will not be applied, even if enabled.
 
 ### External Postgres
+
 The `AWX.postgres` section simplifies the creation of the external postgres secret. If enabled, the configs provided will automatically be placed in a `postgres-config` secret and linked to the `AWX` resource. For proper secret management, the `AWX.postgres.password` value, and any other sensitive values, can be passed in at the command line rather than specified in code. Use the `--set` argument with `helm install`. Supplying the password this way is not recommended for production use, but may be helpful for initial PoC.
 
 ### Additional Kubernetes Resources
+
 The `AWX.extraDeploy` section allows the creation of additional Kubernetes resources. This simplifies setups requiring additional objects that are used by AWX, e.g. using `ExternalSecrets` to create Kubernetes secrets.
 
 Resources are passed as an array, either as YAML or strings (literal "|"). The resources are passed through `tpl`, so templating is possible. Example:
@@ -126,6 +131,7 @@ extraDeploy:
 ```
 
 ### Custom secrets
+
 The `customSecrets` section simplifies the creation of our custom secrets used during AWX deployment. Supplying the passwords this way is not recommended for production use, but may be helpful for initial PoC.
 
 If enabled, the configs provided will automatically used to create the respective secrets and linked at the CR spec level. For proper secret management, the sensitive values can be passed in at the command line rather than specified in code. Use the `--set` argument with `helm install`.
@@ -187,6 +193,7 @@ AWX:
 ```
 
 ### Custom volumes
+
 The `customVolumes` section simplifies the creation of Persistent Volumes used when you want to store your databases and projects files on the cluster's Node. Since their backends are `hostPath`, the size specified are just like a label and there is no actual capacity limitation.
 
 You have to prepare directories for these volumes. For example:
@@ -223,6 +230,7 @@ AWX:
 ## Values Summary
 
 ### AWX
+
 | Value | Description | Default |
 |---|---|---|
 | `AWX.enabled` | Enable this AWX resource configuration | `false` |
@@ -231,16 +239,19 @@ AWX:
 | `AWX.postgres` | configurations for the external postgres secret | - |
 
 ### extraDeploy
+
 | Value | Description | Default |
 |---|---|---|
 | `extraDeploy` | array of additional resources to be deployed (supports YAML or literal "\|") | - |
 
 ### Operator
+
 | Value | Description | Default |
 |---|---|---|
 | `Operator.replicas` | Number of controller-manager instance replicas | `1` |
 
 ### customSecrets
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.enabled` | Enable the secret resources configuration | `false` |
@@ -254,10 +265,10 @@ AWX:
 | `customSecrets.eePullCredentials` | Configurations for the secret that contains the pull credentials for registered ees can be found | - |
 | `customSecrets.cpPullCredentials` | Configurations for the secret that contains the image pull credentials for app and database containers | - |
 
-
 Below the addition variables to customize the secret configuration.
 
 #### Admin user password secret configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.admin.enabled` | If `true`, secret will be created | `false` |
@@ -265,6 +276,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.admin.secretName` | Name of secret for `admin_password_secret` | `<resourcename>-admin-password>` |
 
 #### Secret Key secret configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.secretKey.enabled` | If `true`, secret will be created | `false` |
@@ -272,6 +284,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.secretKey.secretName` | Name of secret for `secret_key_secret` | `<resourcename>-secret-key` |
 
 #### Ingress TLS secret configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.ingressTls.enabled` | If `true`, secret will be created | `false` |
@@ -282,6 +295,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.ingressTls.labels` | Array of labels for the secret | - |
 
 #### Route TLS secret configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.routeTls.enabled` | If `true`, secret will be created | `false` |
@@ -290,6 +304,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.routeTls.secretName` | Name of secret for `route_tls_secret` | `<resourcename>-route-tls` |
 
 #### LDAP Certificate Authority secret configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.ldapCacert.enabled` | If `true`, secret will be created | `false` |
@@ -297,6 +312,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.ldapCacert.secretName` | Name of secret for `ldap_cacert_secret` | `<resourcename>-custom-certs` |
 
 #### LDAP BIND DN Password secret configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.ldap.enabled` | If `true`, secret will be created | `false` |
@@ -304,6 +320,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.ldap.secretName` | Name of secret for `ldap_password_secret` | `<resourcename>-ldap-password` |
 
 #### Certificate Authority secret configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.bundleCacert.enabled` | If `true`, secret will be created | `false` |
@@ -311,6 +328,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.bundleCacert.secretName` | Name of secret for `bundle_cacert_secret` | `<resourcename>-custom-certs` |
 
 #### Default EE pull secrets configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.eePullCredentials.enabled` | If `true`, secret will be created | `false` |
@@ -321,6 +339,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.eePullCredentials.secretName` | Name of secret for `ee_pull_credentials_secret` | `<resourcename>-ee-pull-credentials` |
 
 #### Control Plane pull secrets configuration
+
 | Value | Description | Default |
 |---|---|---|
 | `customSecrets.cpPullCredentials.enabled` | If `true`, secret will be created | `false` |
@@ -333,6 +352,7 @@ Below the addition variables to customize the secret configuration.
 ### customVolumes
 
 #### Persistent Volume for databases postgres
+
 | Value | Description | Default |
 |---|---|---|
 | `customVolumes.postgres.enabled` | Enable the PV resource configuration for the postgres databases | `false` |
@@ -342,6 +362,7 @@ Below the addition variables to customize the secret configuration.
 | `customVolumes.postgres.storageClassName` | PersistentVolume storage class name for `postgres_storage_class` | `<resourcename>-postgres-volume` |
 
 #### Persistent Volume for projects files
+
 | Value | Description | Default |
 |---|---|---|
 | `customVolumes.projects.enabled` | Enable the PVC and PVC resources configuration for the projects files | `false` |
@@ -350,19 +371,21 @@ Below the addition variables to customize the secret configuration.
 | `customVolumes.projects.accessModes` | Volume access mode | `ReadWriteOnce` |
 | `customVolumes.postgres.storageClassName` | PersistentVolume storage class name | `<resourcename>-projects-volume` |
 
-# Contributing
+## Contributing
 
-## Adding abstracted sections
+### Adding abstracted sections
+
 Where possible, defer to `AWX.spec` configs before applying the abstracted configs to avoid collision. This can be facilitated by the `(hasKey .spec what_i_will_abstract)` check.
 
-## Building and Testing
+### Building and Testing
+
 This chart is built using the Makefile in the [awx-operator repo](https://github.com/ansible/awx-operator). Clone the repo and run `make helm-chart`. This will create the awx-operator chart in the `charts/awx-operator` directory. In this process, the contents of the `.helm/starter` directory will be added to the chart.
 
-## Future Goals
+### Future Goals
+
 All values under the `AWX` header are focused on configurations that use the operator. Configurations that relate to the Operator itself could be placed under an `Operator` heading, but that may add a layer of complication over current development.
 
-
-# Chart Publishing
+## Chart Publishing
 
 The chart is currently hosted on the gh-pages branch of the repo. During the release pipeline, the `index.yaml` stored in that branch is generated with helm chart entries from all valid tags. We are currently unable to use the `chart-releaser` pipeline due to the fact that the complete helm chart is not committed to the repo and is instead built during the release process. Therefore, the cr action is unable to compare against previous versions.
 
