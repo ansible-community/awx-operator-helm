@@ -5,7 +5,7 @@ For those that wish to use [Helm](https://helm.sh/) to install the awx-operator 
 The helm chart is generated from the `helm-chart` Makefile section using the starter files in `.helm/starter`. Consult [the documentation](https://github.com/ansible-community/awx-operator-helm/blob/main/README.md) on how to customize the AWX resource with your own values.
 
 ```bash
-$ helm repo add awx-operator https://ansible.github.io/awx-operator/
+$ helm repo add awx-operator https://ansible-community.github.io/awx-operator-helm/
 "awx-operator" has been added to your repositories
 
 $ helm repo update
@@ -15,7 +15,7 @@ Update Complete. ⎈Happy Helming!⎈
 
 $ helm search repo awx-operator
 NAME                            CHART VERSION   APP VERSION     DESCRIPTION
-awx-operator/awx-operator       0.17.1          0.17.1          A Helm chart for the AWX Operator
+awx-operator/awx-operator       2.19.1          2.19.1          A Helm chart for the AWX Operator
 
 $ helm install -n awx --create-namespace my-awx-operator awx-operator/awx-operator
 NAME: my-awx-operator
