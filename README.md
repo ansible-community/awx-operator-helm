@@ -2,6 +2,23 @@
 
 This chart installs the AWX Operator resources configured in [this](https://github.com/ansible/awx-operator) repository.
 
+## Communication
+
+Refer to the
+[Getting in touch](https://ansible.readthedocs.io/projects/awx-operator-helm/contributing.html#getting-in-touch)
+section of the Contributors guide to find out how to get in touch with us.
+
+You can also find more ways to talk to the community in the [Ansible communication guide](https://docs.ansible.com/ansible/devel/community/communication.html).
+
+## Code of Conduct
+
+Please read and abide by the [Ansible Community Code of Conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html).
+
+## Documentation
+
+- The [Basic usage guide](https://ansible-community.github.io/awx-operator-helm/) provides quickstart information to install the chart.
+- The [AWX operator helm chart docsite](https://ansible.readthedocs.io/projects/awx-operator-helm/) provides complete information about installing, using, contributing, and more.
+
 ## Getting Started
 
 To configure your AWX resource using this chart, create your own `yaml` values file. The name is up to personal preference since it will explicitly be passed into the helm chart. Helm will merge whatever values you specify in your file with the default `values.yaml`, overriding any settings you've changed while allowing you to fall back on defaults. Because of this functionality, `values.yaml` should not be edited directly.
