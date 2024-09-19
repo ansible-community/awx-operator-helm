@@ -17,6 +17,8 @@ CHART_REPO ?= awx-operator
 CHART_BRANCH ?= gh-pages
 CHART_DIR ?= gh-pages
 CHART_INDEX ?= index.yaml
+# use python3 if python isn't in the path
+PYTHON ?= $(shell which python >/dev/null 2>&1 && echo python || echo python3)
 
 .PHONY: kustomize
 KUSTOMIZE = $(shell pwd)/bin/kustomize
@@ -111,7 +113,7 @@ helm-chart: helm-chart-generate
 helm-chart-generate: kustomize helm kubectl-slice yq charts
 
 	@echo "== Clone the AWX Operator repository =="
-	python clone-awx-operator.py
+	$(PYTHON) clone-awx-operator.py
 
 	@echo "== KUSTOMIZE: Set image and chart label =="
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
@@ -148,10 +150,7 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 	for file in charts/$(CHART_NAME)/raw-files/*rolebinding*; do\
 		$(YQ) -i '.subjects[0].namespace = "{{ .Release.Namespace }}"' $${file};\
 	done
-	# Add .spec.replicas for the controller-manager deployment
-	for file in charts/$(CHART_NAME)/raw-files/deployment-*-controller-manager.yaml; do\
-		$(YQ) -i '.spec.replicas = "{{ (.Values.Operator).replicas | default 1 }}"' $${file};\
-	done
+
 	# Correct .metadata.name for cluster scoped resources
 	cluster_scoped_files="charts/$(CHART_NAME)/raw-files/clusterrolebinding-awx-operator-proxy-rolebinding.yaml charts/$(CHART_NAME)/raw-files/clusterrole-awx-operator-metrics-reader.yaml charts/$(CHART_NAME)/raw-files/clusterrole-awx-operator-proxy-role.yaml";\
 	for file in $${cluster_scoped_files}; do\
@@ -159,10 +158,16 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 	done
 	# Correct the reference for the clusterrolebinding
 	$(YQ) -i '.roleRef.name += "-{{ .Release.Name }}"' 'charts/$(CHART_NAME)/raw-files/clusterrolebinding-awx-operator-proxy-rolebinding.yaml'
-	# Correct .spec.replicas type for the controller-manager deployment
+
+	# Feed controller deployment file into template to allow for override from values
 	for file in charts/$(CHART_NAME)/raw-files/deployment-*-controller-manager.yaml; do\
-		$(SED_I) "s/'{{ (.Values.Operator).replicas | default 1 }}'/{{ (.Values.Operator).replicas | default 1 }}/g" $${file};\
+		cat $${file} >> charts/$(CHART_NAME)/templates/controller/_controller.tpl;\
+		echo "\n---" >> charts/$(CHART_NAME)/templates/controller/_controller.tpl;\
+		rm -f $${file} ;\
 	done
+	echo '{{- end -}}' >> charts/$(CHART_NAME)/templates/controller/_controller.tpl
+
+
 	# move all custom resource definitions to crds folder
 	mkdir charts/$(CHART_NAME)/crds
 	mv charts/$(CHART_NAME)/raw-files/customresourcedefinition*.yaml charts/$(CHART_NAME)/crds/.
