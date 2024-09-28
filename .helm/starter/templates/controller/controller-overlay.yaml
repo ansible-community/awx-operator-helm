@@ -1,0 +1,15 @@
+{{- $controllerTemplate := (include "awx-operator.controller" $) | fromYaml }}
+
+{{- $existingLabels := default dict ($controllerTemplate.metadata).labels }}
+{{- $mergedLabels := mergeOverwrite $existingLabels $.Values.controller.labels }}
+{{- /* Use set in case the dict didn't exist */}}
+{{- $_ := set $controllerTemplate.metadata "labels" $mergedLabels }}
+
+{{- $existingAnnotations := default dict ($controllerTemplate.metadata).annotations }}
+{{- $mergedAnnotations := mergeOverwrite $existingAnnotations $.Values.controller.annotations }}
+{{- /* Use set in case the dict didn't exist */}}
+{{- $_ := set $controllerTemplate.metadata "annotations" $mergedAnnotations }}
+
+{{- $_ := mergeOverwrite $controllerTemplate.spec $.Values.controller.spec }}
+
+{{ $controllerTemplate | toYaml }}
