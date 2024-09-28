@@ -252,6 +252,8 @@ AWX:
 |---|---|---|
 | `AWX.enabled` | Enable this AWX resource configuration | `false` |
 | `AWX.name` | The name of the AWX resource and default prefix for other resources | `"awx"` |
+| `AWX.annotations` | add annotations to the AWX resource | `{}` |
+| `AWX.labels` | add labels to the AWX resource | `{}` |
 | `AWX.spec` | specs to directly configure the AWX resource | `{}` |
 | `AWX.postgres` | configurations for the external postgres secret | - |
 
