@@ -2,6 +2,8 @@
 # This Makefile is created with the clone-awx-operator.py script.
 include Makefile.awx-operator
 
+AWX_VERSION := $(shell cat awx-operator-version.txt)
+
 # GNU vs BSD in-place sed
 ifeq ($(shell sed --version 2>/dev/null | grep -q GNU && echo gnu),gnu)
 	SED_I := sed -i
@@ -124,7 +126,7 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 	# create new chart metadata in Chart.yaml
 	cd charts && \
 		$(HELM) create $(CHART_NAME) --starter $(shell pwd)/.helm/starter ;\
-		$(YQ) -i '.version = "$(VERSION)"' $(CHART_NAME)/Chart.yaml ;\
+		$(YQ) -i '.version = "$(AWX_VERSION)"' $(CHART_NAME)/Chart.yaml ;\
 		$(YQ) -i '.appVersion = "$(VERSION)" | .appVersion style="double"' $(CHART_NAME)/Chart.yaml ;\
 		$(YQ) -i '.description = "$(CHART_DESCRIPTION)"' $(CHART_NAME)/Chart.yaml ;\
 
@@ -176,7 +178,7 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 	# create and populate NOTES.txt
 	@echo "AWX Operator installed with Helm Chart version $(VERSION)" > charts/$(CHART_NAME)/templates/NOTES.txt
 
-	@echo "Helm chart successfully configured for $(CHART_NAME) version $(VERSION)"
+	@echo "Helm chart successfully configured for $(CHART_NAME) version $(AWX_VERSION)"
 
 
 .PHONY: helm-package
