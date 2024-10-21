@@ -14,7 +14,19 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULT_BRANCH = "devel"
+
+def read_version_from_file(file_path):
+    try:
+        with open(file_path, "r") as file:
+            version = file.read().strip()
+        return version
+    except FileNotFoundError:
+        print(f"Error: '{file_path}' not found.")
+
+
+awx_version = read_version_from_file(file_path="awx-operator-version.txt")
+
+DEFAULT_BRANCH = awx_version
 DEFAULT_AWX_OPERATOR_REPO = "https://github.com/ansible/awx-operator"
 
 
@@ -65,7 +77,13 @@ def main(args: Args) -> None:
     ]
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        cmd: list[str] = ["git", "clone", args.repo, "--depth=1"]
+        cmd: list[str] = [
+            "git",
+            "clone",
+            args.repo,
+            "--depth=1",
+            "-c advice.detachedHead=false",
+        ]
         if args.branch is not None:
             cmd.append(f"--branch={args.branch}")
         cmd.append(temp_dir)
@@ -86,7 +104,7 @@ def main(args: Args) -> None:
 
         for keep_file in keep_files:
             src = pathlib.Path(temp_dir, keep_file)
-            if keep_file == 'Makefile':
+            if keep_file == "Makefile":
                 dst = pathlib.Path.cwd() / "Makefile.awx-operator"
             else:
                 dst = pathlib.Path.cwd() / keep_file
