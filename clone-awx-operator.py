@@ -14,9 +14,27 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULT_BRANCH = "devel"
 DEFAULT_AWX_OPERATOR_REPO = "https://github.com/ansible/awx-operator"
 
+# get the appVersion configured in Chart.yaml
+def get_app_version():
+    try:
+        chart_yaml_path = "./.helm/starter/Chart.yaml"
+        with open(chart_yaml_path) as chart:
+            for line in chart:
+                if line.startswith("appVersion:"):
+                    print(f"Looking at line {line}")
+                    result = line.split(":", 1)
+                    if len(result) != 2:
+                        raise KeyError("Malformed appVersion in Chart.yaml")
+                    app_version = result[1].strip()
+                    print(f"pre strip |||{result[1]}|||")
+                    if not app_version:
+                        raise KeyError("No appVersion value found")
+                    return app_version
+    except FileNotFoundError:
+        raise FileNotFoundError("Failed to open Chart.yaml")
+    raise KeyError("Could not find appVersion in Chart.yaml")
 
 @dataclasses.dataclass()
 class Args:
@@ -30,8 +48,8 @@ def parse_args(args: list[str] | None = None) -> Args:
         "-b",
         "--branch",
         help="Set the branch of awx-operator to clone."
-        " Defaults to current branch (%(default)s)",
-        default=DEFAULT_BRANCH,
+        " Defaults to configured appVersion",
+        default=get_app_version(),
     )
     parser.add_argument(
         "--no-branch",
@@ -65,7 +83,13 @@ def main(args: Args) -> None:
     ]
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        cmd: list[str] = ["git", "clone", args.repo, "--depth=1"]
+        cmd: list[str] = [
+            "git",
+            "clone",
+            args.repo,
+            "--depth=1",
+            "-c advice.detachedHead=false",
+        ]
         if args.branch is not None:
             cmd.append(f"--branch={args.branch}")
         cmd.append(temp_dir)
