@@ -24,12 +24,10 @@ def get_app_version():
         with open(chart_yaml_path, "r", encoding="utf-8") as chart:
             for line in chart:
                 if line.startswith("appVersion:"):
-                    print(f"Looking at line {line}")
                     result = line.split(":", 1)
                     if len(result) != 2:
                         raise KeyError("Malformed appVersion in Chart.yaml")
                     app_version = result[1].strip()
-                    print(f"pre strip |||{result[1]}|||")
                     if not app_version:
                         raise KeyError("No appVersion value found")
                     return app_version
