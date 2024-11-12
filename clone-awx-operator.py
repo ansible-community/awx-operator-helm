@@ -16,11 +16,12 @@ import tempfile
 
 DEFAULT_AWX_OPERATOR_REPO = "https://github.com/ansible/awx-operator"
 
+
 # get the appVersion configured in Chart.yaml
 def get_app_version():
     try:
         chart_yaml_path = "./.helm/starter/Chart.yaml"
-        with open(chart_yaml_path) as chart:
+        with open(chart_yaml_path, "r", encoding="utf-8") as chart:
             for line in chart:
                 if line.startswith("appVersion:"):
                     print(f"Looking at line {line}")
@@ -32,9 +33,10 @@ def get_app_version():
                     if not app_version:
                         raise KeyError("No appVersion value found")
                     return app_version
-    except FileNotFoundError:
-        raise FileNotFoundError("Failed to open Chart.yaml")
+    except FileNotFoundError as e:
+        raise FileNotFoundError("Failed to open Chart.yaml") from e
     raise KeyError("Could not find appVersion in Chart.yaml")
+
 
 @dataclasses.dataclass()
 class Args:
@@ -110,7 +112,7 @@ def main(args: Args) -> None:
 
         for keep_file in keep_files:
             src = pathlib.Path(temp_dir, keep_file)
-            if keep_file == 'Makefile':
+            if keep_file == "Makefile":
                 dst = pathlib.Path.cwd() / "Makefile.awx-operator"
             else:
                 dst = pathlib.Path.cwd() / keep_file
