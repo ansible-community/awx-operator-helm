@@ -11,12 +11,13 @@ endif
 
 # Helm variables
 CHART_NAME ?= awx-operator
-CHART_DESCRIPTION ?= A Helm chart for the AWX Operator
 CHART_OWNER ?= $(GH_REPO_OWNER)
 CHART_REPO ?= awx-operator
 CHART_BRANCH ?= gh-pages
 CHART_DIR ?= gh-pages
 CHART_INDEX ?= index.yaml
+# use python3 if python isn't in the path
+PYTHON ?= $(shell which python >/dev/null 2>&1 && echo python || echo python3)
 
 .PHONY: kustomize
 KUSTOMIZE = $(shell pwd)/bin/kustomize
@@ -67,6 +68,10 @@ YQ = $(shell which yq)
 endif
 endif
 
+.PHONY: chart-version
+chart-version: yq
+CHART_VERSION = $(shell cat .helm/starter/Chart.yaml | $(YQ) '.version')
+
 .PHONY: helm
 HELM = $(shell pwd)/bin/helm
 helm: ## Download helm locally if necessary.
@@ -111,7 +116,7 @@ helm-chart: helm-chart-generate
 helm-chart-generate: kustomize helm kubectl-slice yq charts
 
 	@echo "== Clone the AWX Operator repository =="
-	python clone-awx-operator.py
+	$(PYTHON) clone-awx-operator.py
 
 	@echo "== KUSTOMIZE: Set image and chart label =="
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
@@ -120,13 +125,11 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 
 	@echo "== Gather Helm Chart Metadata =="
 	# remove the existing chart if it exists
+	# edit and copy the Chart.yaml ourselves since helm doesn't do it: https://github.com/helm/helm/issues/9551#issuecomment-811217822
 	rm -rf charts/$(CHART_NAME)
-	# create new chart metadata in Chart.yaml
 	cd charts && \
 		$(HELM) create $(CHART_NAME) --starter $(shell pwd)/.helm/starter ;\
-		$(YQ) -i '.version = "$(VERSION)"' $(CHART_NAME)/Chart.yaml ;\
-		$(YQ) -i '.appVersion = "$(VERSION)" | .appVersion style="double"' $(CHART_NAME)/Chart.yaml ;\
-		$(YQ) -i '.description = "$(CHART_DESCRIPTION)"' $(CHART_NAME)/Chart.yaml ;\
+		$(YQ) '.name = "$(CHART_NAME)"' $(shell pwd)/.helm/starter/Chart.yaml > $(CHART_NAME)/Chart.yaml;\
 
 	@echo "Generated chart metadata:"
 	@cat charts/$(CHART_NAME)/Chart.yaml
@@ -174,17 +177,17 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 	rm -rf charts/$(CHART_NAME)/raw-files
 
 	# create and populate NOTES.txt
-	@echo "AWX Operator installed with Helm Chart version $(VERSION)" > charts/$(CHART_NAME)/templates/NOTES.txt
+	@echo "AWX Operator installed with Helm Chart version {{ .Chart.Version }}" > charts/$(CHART_NAME)/templates/NOTES.txt
 
-	@echo "Helm chart successfully configured for $(CHART_NAME) version $(VERSION)"
+	@echo "Helm chart successfully configured for $(CHART_NAME)"
 
 
 .PHONY: helm-package
-helm-package: helm-chart
+helm-package: helm-chart chart-version
 	@echo "== Package Current Chart Version =="
 	mkdir -p .cr-release-packages
 	# package the chart and put it in .cr-release-packages dir
-	$(HELM) package ./charts/$(CHART_NAME) -d .cr-release-packages/$(VERSION)
+	$(HELM) package ./charts/$(CHART_NAME) -d .cr-release-packages/$(CHART_VERSION)
 
 # List all tags oldest to newest.
 TAGS := $(shell git ls-remote --tags --sort=version:refname --refs -q | cut -d/ -f3)

@@ -1,7 +1,9 @@
 ---
 apiVersion: v2
-appVersion: 0.1.0
-description: A Helm chart for Kubernetes
-name: starter
+description: The community-supported AWX Operator Helm Chart
+name: awx-operator
 type: application
+# the current version of this helm chart
 version: 0.1.0
+# The version of the awx-operator to install
+appVersion: 2.19.1
