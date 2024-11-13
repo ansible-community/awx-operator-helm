@@ -5,6 +5,14 @@ kind: AWX
 metadata:
   name: {{ .name }}
   namespace: {{ $.Release.Namespace }}
+  {{- with .labels }}
+  labels:
+    {{ . | toYaml }}
+  {{- end }}
+  {{- with .annotations }}
+  labels:
+    {{ . | toYaml }}
+  {{- end }}
 spec:
 {{- /* Provide custom persistent volumes configs if enabled */}}
 {{- include "spec.storageClassNames" $ }}
