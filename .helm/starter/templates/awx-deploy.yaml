@@ -7,11 +7,11 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   {{- with .labels }}
   labels:
-    {{ . | toYaml }}
+    {{- . | toYaml | nindent 4 }}
   {{- end }}
   {{- with .annotations }}
-  labels:
-    {{ . | toYaml }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
   {{- end }}
 spec:
 {{- /* Provide custom persistent volumes configs if enabled */}}
