@@ -78,7 +78,7 @@ Use `--force-conflicts` flag to resolve the conflict.
 kubectl apply --server-side --force-conflicts -k github.com/ansible/awx-operator/config/crd?ref=<VERSION>
 ```
 
-## Configuration
+## Custom Resource Configuration
 
 The goal of adding helm configurations is to abstract out and simplify the creation of multi-resource configs. The `AWX.spec` field maps directly to the spec configs of the `AWX` resource that the operator provides, which are detailed in the [main README](https://github.com/ansible/awx-operator/blob/devel/README.md). Other sub-config can be added with the goal of simplifying more involved setups that require additional resources to be specified.
 
@@ -246,6 +246,28 @@ AWX:
 
 ## Values Summary
 
+### Controller
+The configuration of the `awx-operator-controller-manager` `Deployment` resource can be overridden by the
+`operator-controller` field. Any fields specified under this key will map directly onto the root hierarchy of the [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) configuration.
+
+For example, to override the replicas of the controller deployment, use:
+
+```yml
+# values
+operator-controller:
+  spec:
+    replicas: 4
+```
+
+Similarly, to add or override annotations:
+```yml
+#values
+operator-controller:
+  metadata:
+    annotations:
+      my-key: my-value
+```
+
 ### AWX
 
 | Value | Description | Default |
@@ -262,12 +284,6 @@ AWX:
 | Value | Description | Default |
 |---|---|---|
 | `extraDeploy` | array of additional resources to be deployed (supports YAML or literal "\|") | - |
-
-### Operator
-
-| Value | Description | Default |
-|---|---|---|
-| `Operator.replicas` | Number of controller-manager instance replicas | `1` |
 
 ### customSecrets
 
@@ -399,10 +415,6 @@ Where possible, defer to `AWX.spec` configs before applying the abstracted confi
 ### Building and Testing
 
 This chart is built using the Makefile in the [awx-operator repo](https://github.com/ansible/awx-operator). Clone the repo and run `make helm-chart`. This will create the awx-operator chart in the `charts/awx-operator` directory. In this process, the contents of the `.helm/starter` directory will be added to the chart.
-
-### Future Goals
-
-All values under the `AWX` header are focused on configurations that use the operator. Configurations that relate to the Operator itself could be placed under an `Operator` heading, but that may add a layer of complication over current development.
 
 ## Chart Publishing
 

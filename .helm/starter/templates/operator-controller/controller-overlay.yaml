@@ -1,0 +1,4 @@
+{{- $operatorControllerTemplate := (include "awx-operator.controller" $) | fromYaml }}
+{{- $_ := mergeOverwrite $operatorControllerTemplate (index $.Values "operator-controller") }}
+
+{{ $operatorControllerTemplate | toYaml }}
