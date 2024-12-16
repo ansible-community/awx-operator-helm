@@ -26,7 +26,7 @@ jobs:
         run: python ./clone-awx-operator.py
 
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.10.0
+        uses: helm/kind-action@v1.11.0
 
       - name: Build operator image and load into kind
         run: |
