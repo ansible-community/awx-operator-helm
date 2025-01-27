@@ -84,7 +84,10 @@ Releases occur using the [chart-releaser](https://github.com/helm/chart-releaser
 
 > The original releases from awx-operator were pre-seeded into the `index.yaml`
 
-Chart-releaser is designed to use the `charts` directory as the source of truth for the current state of the chart. If there are changes to it, the action will generate a release. Unlike many other helm charts, this one is generated on the fly by pulling in the awx-operator source code. As a result, the release workflow will also commit the state of the generated chart to the charts directory.
+Chart-releaser is designed to use the `charts` directory as the source of truth for the current state of the chart.
+If there are changes to that directory, the action generates a release.
+Unlike many other helm charts, this one is generated on the fly by pulling in the awx-operator source code.
+As a result, the release workflow also commits the state of the generated chart to the `charts` directory.
 
 ### The `charts/` directory is a reflection of the release state, not a source of truth to edit for new features
 Keep in mind that any changes to how the helm chart works should be done to the starter template.
