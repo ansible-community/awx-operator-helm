@@ -93,7 +93,10 @@ As a result, the release workflow also commits the state of the generated chart 
 > Any changes to helm chart functionality must be applied to the starter template.
 
 ### Versioning
-The current CI setup will skip releases for commits that don't make any changes to the generated chart. The use-case for this is documentation or other file updates that don't impact the helm chart. But *any* release that affects helm chart generation *must* increment the `version` field in `.helm/starter/Chart.yaml`, which is our source of truth for versioning in this repo.
+
+The current CI setup will skip releases for commits that don't make any changes to the generated chart.
+The use case for this is documentation or other file updates that don't impact the helm chart.
+However *any* release that affects helm chart generation *must* increment the `version` field in `.helm/starter/Chart.yaml`, which is our source of truth for versioning in this repo.
 
 
 ## Custom Resource Configuration
