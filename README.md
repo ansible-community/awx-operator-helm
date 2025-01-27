@@ -79,7 +79,8 @@ kubectl apply --server-side --force-conflicts -k github.com/ansible/awx-operator
 ```
 
 ## Releases
-Releases occur using the [chart-releaser](https://github.com/helm/chart-releaser-action) action, which creates chart artifacts as github releases and updates a helm repo index held in the `gh-pages` branch.
+
+Releases occur using the [chart-releaser](https://github.com/helm/chart-releaser-action) action, which creates chart artifacts as GitHub releases and updates a helm index held in the `gh-pages` branch.
 
 > The original releases from awx-operator were pre-seeded into the `index.yaml`
 
