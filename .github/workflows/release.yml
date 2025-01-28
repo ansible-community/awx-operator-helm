@@ -37,7 +37,7 @@ jobs:
       - name: Commit generated chart
         if: steps.check_chart_changes.outputs.chart_changes == 'true'
         run: |
-          git pull -r origin/main
+          git pull --rebase origin/main
           git add charts/
           git commit -m "Generated chart for release"
           git push
