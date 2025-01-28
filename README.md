@@ -78,6 +78,27 @@ Use `--force-conflicts` flag to resolve the conflict.
 kubectl apply --server-side --force-conflicts -k github.com/ansible/awx-operator/config/crd?ref=<VERSION>
 ```
 
+## Releases
+
+Releases occur using the [chart-releaser](https://github.com/helm/chart-releaser-action) action, which creates chart artifacts as GitHub releases and updates a helm index held in the `gh-pages` branch.
+
+> The original releases from awx-operator were pre-seeded into the `index.yaml`
+
+Chart-releaser is designed to use the `charts` directory as the source of truth for the current state of the chart.
+If there are changes to that directory, the action generates a release.
+Unlike many other helm charts, this one is generated on the fly by pulling in the awx-operator source code.
+As a result, the release workflow also commits the state of the generated chart to the `charts` directory.
+
+> The `charts/` directory is a reflection of the release state, not a source of truth to edit for new features.
+> Any changes to helm chart functionality must be applied to the starter template.
+
+### Versioning
+
+The current CI setup will skip releases for commits that don't make any changes to the generated chart.
+The use case for this is documentation or other file updates that don't impact the helm chart.
+However *any* release that affects helm chart generation *must* increment the `version` field in `.helm/starter/Chart.yaml`, which is our source of truth for versioning in this repo.
+
+
 ## Custom Resource Configuration
 
 The goal of adding helm configurations is to abstract out and simplify the creation of multi-resource configs. The `AWX.spec` field maps directly to the spec configs of the `AWX` resource that the operator provides, which are detailed in the [main README](https://github.com/ansible/awx-operator/blob/devel/README.md). Other sub-config can be added with the goal of simplifying more involved setups that require additional resources to be specified.
