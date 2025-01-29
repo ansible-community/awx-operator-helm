@@ -28,8 +28,8 @@ jobs:
         id: check_chart_changes
         run: >-
           git diff --quiet charts/
-          && echo "chart_changes=true" >> $GITHUB_OUTPUT
-          || echo "chart_changes=false" >> $GITHUB_OUTPUT
+          && echo "chart_changes=false" >> $GITHUB_OUTPUT
+          || echo "chart_changes=true" >> $GITHUB_OUTPUT
 
       # If we generated a new helm chart, we need to commit it
       # We need to do this step because our helm chart is not the source of truth, it's generated from starter
@@ -37,7 +37,7 @@ jobs:
       - name: Commit generated chart
         if: steps.check_chart_changes.outputs.chart_changes == 'true'
         run: |
-          git pull --rebase origin/main
+          git pull --rebase origin main
           git add charts/
           git commit -m "Generated chart for release"
           git push
