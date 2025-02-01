@@ -1,0 +1,1 @@
+AWX Operator installed with Helm Chart version {{ .Chart.Version }}
