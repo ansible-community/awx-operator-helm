@@ -27,9 +27,9 @@ jobs:
       - name: Check for changes to generated helm chart
         id: check_chart_changes
         run: >-
-          git diff --quiet charts/
-          && echo "chart_changes=false" >> $GITHUB_OUTPUT
-          || echo "chart_changes=true" >> $GITHUB_OUTPUT
+          git status --porcelain charts/
+          | grep -q "." && echo "chart_changes=true" >> $GITHUB_OUTPUT
+          || echo "chart_changes=false" >> $GITHUB_OUTPUT
 
       # If we generated a new helm chart, we need to commit it
       # We need to do this step because our helm chart is not the source of truth, it's generated from starter
