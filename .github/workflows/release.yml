@@ -10,11 +10,15 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    environment:
+      name: chart-release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ssh-key: ${{ secrets.RELEASE_DEPLOY }}
+          persist-credentials: true
 
       - name: Configure Git
         run: |
