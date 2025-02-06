@@ -46,6 +46,6 @@ jobs:
       # but we explicitly check to keep the chart releaser and our generates charts/ dir in sync
       - name: Run chart-releaser
         if: steps.check_chart_changes.outputs.chart_changes == 'true'
-        uses: helm/chart-releaser-action@v1.6.0
+        uses: helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
