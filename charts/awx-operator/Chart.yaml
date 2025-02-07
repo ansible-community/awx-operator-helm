@@ -1,0 +1,9 @@
+---
+apiVersion: v2
+description: The community-supported AWX Operator Helm Chart
+name: awx-operator
+type: application
+# the current version of this helm chart
+version: 3.0.0
+# The version of the awx-operator to install
+appVersion: 2.19.1
