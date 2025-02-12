@@ -1,0 +1,33 @@
+name: Chart Generation
+
+
+on:
+  pull_request:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    name: Ensure Committed Chart
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Chart
+        run: make helm-chart-generate
+
+      - name: Check for changes in charts dir
+        id: check_chart_changes
+        run: >-
+          git status --porcelain charts/
+          | grep -q "." && echo "chart_changes=true" >> $GITHUB_OUTPUT
+          || echo "chart_changes=false" >> $GITHUB_OUTPUT
+
+      # split up to cut down on verbosity in git check command
+      - name: Ensure chart is fully committed
+        if: ${{ steps.check_chart_changes.outputs.chart_changes == 'true' }}
+        run: >-
+          echo "::error title=Uncommitted-Chart::Chart not up to date. Your PR causes changes in
+          the helm chart. Run 'make helm-chart-generate' locally to regenerate the chart
+          and then commit the changes for review"; exit 1
