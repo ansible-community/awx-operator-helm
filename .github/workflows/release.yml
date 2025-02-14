@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'charts/**'
 
 jobs:
   release:
@@ -21,31 +23,8 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Generate Chart
-        run: make helm-chart-generate
-
-      - name: Check for changes to generated helm chart
-        id: check_chart_changes
-        run: >-
-          git status --porcelain charts/
-          | grep -q "." && echo "chart_changes=true" >> $GITHUB_OUTPUT
-          || echo "chart_changes=false" >> $GITHUB_OUTPUT
-
-      # If we generated a new helm chart, we need to commit it
-      # We need to do this step because our helm chart is not the source of truth, it's generated from starter
-      # Note that failing to do this doesn't break this release, but it can break future ones and make the release state confusing
-      - name: Commit generated chart
-        if: steps.check_chart_changes.outputs.chart_changes == 'true'
-        run: |
-          git pull --rebase origin main
-          git add charts/
-          git commit -m "Generated chart for release"
-          git push
-
       # Chart releaser will internally only run if there is a diff in charts,
-      # but we explicitly check to keep the chart releaser and our generates charts/ dir in sync
       - name: Run chart-releaser
-        if: steps.check_chart_changes.outputs.chart_changes == 'true'
         uses: helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

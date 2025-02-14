@@ -1,0 +1,32 @@
+name: Check chart generation
+
+
+on:
+  pull_request:
+
+jobs:
+  check-chart-generation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate the helm chart
+        run: make helm-chart-generate
+
+      - name: Check for changes in the charts directory
+        id: check_chart_changes
+        run: >-
+          git status --porcelain charts/
+          | grep -q "." && echo "chart_changes=true" >> $GITHUB_OUTPUT
+          || echo "chart_changes=false" >> $GITHUB_OUTPUT
+
+      # split up to cut down on verbosity in git check command
+      - name: Ensure the helm chart is fully committed
+        if: ${{ steps.check_chart_changes.outputs.chart_changes == 'true' }}
+        run: |
+          git diff charts/
+          echo "::error title=Uncommitted-Chart::Chart is not up to date. Run 'make helm-chart-generate' locally and commit the changes."
+          exit 1
