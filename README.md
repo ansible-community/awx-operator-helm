@@ -88,7 +88,7 @@ Chart-releaser is designed to use the `charts` directory as the source of truth 
 If there are changes to that directory, the action generates a release.
 Unlike many other helm charts, this one is generated on the fly by pulling in the awx-operator source code.
 
-As a result, any PR that changes the chart generation must run `make helm-chart-generate` and commit the chart changes as well.
+As a result, submitting a pull request that modifies the helm chart generation requires you to run `make helm-chart-generate` and commit the chart changes.
 
 ### Versioning
 The current CI setup does not run chart releases for PRs that do not change the generated chart.
