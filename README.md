@@ -87,17 +87,17 @@ Releases occur using the [chart-releaser](https://github.com/helm/chart-releaser
 Chart-releaser is designed to use the `charts` directory as the source of truth for the current state of the chart.
 If there are changes to that directory, the action generates a release.
 Unlike many other helm charts, this one is generated on the fly by pulling in the awx-operator source code.
-As a result, the release workflow also commits the state of the generated chart to the `charts` directory.
 
-> The `charts/` directory is a reflection of the release state, not a source of truth to edit for new features.
-> Any changes to helm chart functionality must be applied to the starter template.
+As a result, submitting a pull request that modifies the helm chart generation requires you to run `make helm-chart-generate` and commit the chart changes.
 
 ### Versioning
+The current CI setup does not run chart releases for PRs that do not change the generated chart.
 
-The current CI setup will skip releases for commits that don't make any changes to the generated chart.
-The use case for this is documentation or other file updates that don't impact the helm chart.
-However *any* release that affects helm chart generation *must* increment the `version` field in `.helm/starter/Chart.yaml`, which is our source of truth for versioning in this repo.
+*Any* release that affects helm chart generation *must* increment the `version` field in `.helm/starter/Chart.yaml`, which is our source of truth for versioning in this repo. Follow the [semantic versioning](https://helm.sh/docs/topics/charts/#charts-and-versioning) guidelines outlined by the helm documentation.
 
+The `appVersion` field in `.helm/starter/Chart.yaml` is the source of truth for the version of AWX Operator that is pulled into the chart templates.
+
+> Before version 3.0.0 of this Chart, the `version` field matched the AWX Operator version. The `version` and `appVersion` fields are independent and can be incremented separately to reflect changes to the chart or the underlying app it installs.
 
 ## Custom Resource Configuration
 
