@@ -105,13 +105,138 @@ The goal of adding helm configurations is to abstract out and simplify the creat
 
 These sub-headers aim to be a more intuitive entrypoint into customizing your deployment, and are easier to manage in the long-term. By design, the helm templates will defer to the manually defined specs to avoid configuration conflicts. For example, if `AWX.spec.postgres_configuration_secret` is being used, the `AWX.postgres` settings will not be applied, even if enabled.
 
-### External Postgres
+Configuring this field is optional, and additional `AWX` resources can be applied to the cluster once the helm chart is installed. In some cases, it may be advisable to install the AWX resource after chart installation to ensure that there is not a race condition with the CRD installation.
+
+For details on configuration options, see the [AWX values section](#awx) below.
+
+> The helm chart is not responsible for implementing any of the functionality configured in the `AWX` resource. If you are seeing an issue where the `AWX` resource spec is not behaving as expected, raise an issue within the [awx-operator](https://github.com/ansible/awx-operator) repo.
+
+## Values Summary
+
+### Operator Controller Spec
+The configuration of the `awx-operator-controller-manager` `Deployment` resource can be overridden by the
+`operator-controller` field. Any fields specified under this key will map directly onto the root hierarchy of the [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) configuration.
+
+For example, to override the replicas of the controller deployment, use:
+
+```yml
+# values
+operator-controller:
+  spec:
+    replicas: 4
+```
+
+Similarly, to add or override annotations:
+```yml
+# values
+operator-controller:
+  metadata:
+    annotations:
+      my-key: my-value
+```
+
+To override configurations for the Pod managed by the Deployment
+
+```yml
+operator-controller:
+  spec:
+    template:
+      spec:
+        securityContext:
+          fsGroup: 2000
+
+```
+
+> Note that helm list merge semantics dictate that any list item you specify will *override* the underlying list instead of merging with it. Use the [container override](#operator-controller-container-configuration-override) field below to allow merging container configs
+
+### Operator Controller Container Configuration override
+A common use-case is the need to override configurations for individual containers. Because of the helm list override semantics mentioned previously, overriding pieces of a container spec would require re-specifying the *entire* `spec.template.spec.containers` list.
+
+For convenience, the `operator-controller-containers` field can be used to specify container overrides that will be merged when the key of the container matches the `name` of the container in the original deployment spec. This field takes precedence over the `operator-controller` field if there are any conflicts.
+
+The following sample values show overriding at the Deployment, Pod, and Container levels:
+
+```yml
+AWX:
+  enabled: true
+  # These configurations relate to awx pods created by the operator, *not* the controller pods themselves
+  spec:
+    security_context_settings:
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ "ALL" ]
+
+operator-controller-containers:
+  # this will get merged into the operator controller deployment spec for
+  # the container named `kube-rbac-proxy` at `spec.template.spec.containers`
+  kube-rbac-proxy:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ "ALL" ]
+  # example: override the environment variables of the main controller container
+  # note that since `env` is a list, it will be an override instead of a merge
+  # so any env var change requires re-specifying the whole list
+  awx-manager:
+    env:
+    - name: ANSIBLE_GATHERING
+      value: explicit
+    - name: ANSIBLE_DEBUG_LOGS
+      value: "true" # default was "false"
+    - name: WATCH_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+
+
+operator-controller:
+  spec:
+    # replicas is an example spec for the deployment
+    replicas: 2
+    # template drills down into the pod that will be manaeg
+    template:
+      spec:
+        # This is a pod-level override, so it can be applied here
+        # and not worry about container list semantics
+        securityContext:
+          fsGroup: 2000
+
+```
+
+
+> Currently, this field cannot be used to add additional containers to the operator controller deployment
+
+
+### AWX
+
+| Value | Description | Default |
+|---|---|---|
+| `AWX.enabled` | Enable this AWX resource configuration | `false` |
+| `AWX.name` | The name of the AWX resource and default prefix for other resources | `"awx"` |
+| `AWX.annotations` | add annotations to the AWX resource | `{}` |
+| `AWX.labels` | add labels to the AWX resource | `{}` |
+| `AWX.spec` | specs to directly configure the AWX resource | `{}` |
+| `AWX.postgres` | configurations for the external postgres secret | - |
+
 
 The `AWX.postgres` section simplifies the creation of the external postgres secret. If enabled, the configs provided will automatically be placed in a `postgres-config` secret and linked to the `AWX` resource. For proper secret management, the `AWX.postgres.password` value, and any other sensitive values, can be passed in at the command line rather than specified in code. Use the `--set` argument with `helm install`. Supplying the password this way is not recommended for production use, but may be helpful for initial PoC.
 
-### Additional Kubernetes Resources
+### extraDeploy
 
-The `AWX.extraDeploy` section allows the creation of additional Kubernetes resources. This simplifies setups requiring additional objects that are used by AWX, e.g. using `ExternalSecrets` to create Kubernetes secrets.
+| Value | Description | Default |
+|---|---|---|
+| `extraDeploy` | array of additional resources to be deployed (supports YAML or literal "\|") | - |
+
+
+The `extraDeploy` section allows the creation of additional Kubernetes resources. This simplifies setups requiring additional objects that are used by AWX, e.g. using `ExternalSecrets` to create Kubernetes secrets.
 
 Resources are passed as an array, either as YAML or strings (literal "|"). The resources are passed through `tpl`, so templating is possible. Example:
 
@@ -167,144 +292,6 @@ extraDeploy:
         - extract:
             key: awx/postgres-configuration-secret
 ```
-
-### Custom secrets
-
-The `customSecrets` section simplifies the creation of our custom secrets used during AWX deployment. Supplying the passwords this way is not recommended for production use, but may be helpful for initial PoC.
-
-If enabled, the configs provided will automatically used to create the respective secrets and linked at the CR spec level. For proper secret management, the sensitive values can be passed in at the command line rather than specified in code. Use the `--set` argument with `helm install`.
-
-Example:
-
-```yaml
-AWX:
-  # enable use of awx-deploy template
-  ...
-
-  # configurations for external postgres instance
-  postgres:
-    enabled: false
-    ...
-
-  customSecrets:
-    enabled: true
-    admin:
-      enabled: true
-      password: mysuperlongpassword
-      secretName: my-admin-password
-    secretKey:
-      enabled: true
-      key: supersecuresecretkey
-      secretName: my-awx-secret-key
-    ingressTls:
-      enabled: true
-      selfSignedCert: true
-      key: unset
-      certificate: unset
-    routeTls:
-      enabled: false
-      key: <contentoftheprivatekey>
-      certificate: <contentofthepublickey>
-    ldapCacert:
-      enabled: false
-      crt: <contentofmybundlecacrt>
-    ldap:
-      enabled: true
-      password: yourldapdnpassword
-    bundleCacert:
-      enabled: false
-      crt: <contentofmybundlecacrt>
-    eePullCredentials:
-      enabled: false
-      url: unset
-      username: unset
-      password: unset
-      sslVerify: true
-      secretName: my-ee-pull-credentials
-    cpPullCredentials:
-      enabled: false
-      dockerconfig:
-        - registry: https://index.docker.io/v1/
-          username: unset
-          password: unset
-      secretName: my-cp-pull-credentials
-```
-
-### Custom volumes
-
-The `customVolumes` section simplifies the creation of Persistent Volumes used when you want to store your databases and projects files on the cluster's Node. Since their backends are `hostPath`, the size specified are just like a label and there is no actual capacity limitation.
-
-You have to prepare directories for these volumes. For example:
-
-```bash
-sudo mkdir -p /data/postgres-13
-sudo mkdir -p /data/projects
-sudo chmod 755 /data/postgres-13
-sudo chown 1000:0 /data/projects
-```
-
-Example:
-
-```yaml
-AWX:
-  # enable use of awx-deploy template
-  ...
-
-  # configurations for external postgres instance
-  postgres:
-    enabled: false
-    ...
-
-  customVolumes:
-    postgres:
-      enabled: true
-      hostPath: /data/postgres-13
-    projects:
-      enabled: true
-      hostPath: /data/projects
-      size: 1Gi
-```
-
-## Values Summary
-
-### Controller
-The configuration of the `awx-operator-controller-manager` `Deployment` resource can be overridden by the
-`operator-controller` field. Any fields specified under this key will map directly onto the root hierarchy of the [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) configuration.
-
-For example, to override the replicas of the controller deployment, use:
-
-```yml
-# values
-operator-controller:
-  spec:
-    replicas: 4
-```
-
-Similarly, to add or override annotations:
-```yml
-#values
-operator-controller:
-  metadata:
-    annotations:
-      my-key: my-value
-```
-
-### AWX
-
-| Value | Description | Default |
-|---|---|---|
-| `AWX.enabled` | Enable this AWX resource configuration | `false` |
-| `AWX.name` | The name of the AWX resource and default prefix for other resources | `"awx"` |
-| `AWX.annotations` | add annotations to the AWX resource | `{}` |
-| `AWX.labels` | add labels to the AWX resource | `{}` |
-| `AWX.spec` | specs to directly configure the AWX resource | `{}` |
-| `AWX.postgres` | configurations for the external postgres secret | - |
-
-### extraDeploy
-
-| Value | Description | Default |
-|---|---|---|
-| `extraDeploy` | array of additional resources to be deployed (supports YAML or literal "\|") | - |
 
 ### customSecrets
 
@@ -405,6 +392,66 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.cpPullCredentials.dockerconfig[].password` | Password to connect with | - |
 | `customSecrets.cpPullCredentials.secretName` |  Name of secret for `image_pull_secrets`| `<resoucename>-cp-pull-credentials` |
 
+The `customSecrets` section simplifies the creation of our custom secrets used during AWX deployment. Supplying the passwords this way is not recommended for production use, but may be helpful for initial PoC.
+
+If enabled, the configs provided will automatically used to create the respective secrets and linked at the CR spec level. For proper secret management, the sensitive values can be passed in at the command line rather than specified in code. Use the `--set` argument with `helm install`.
+
+Example:
+
+```yaml
+AWX:
+  # enable use of awx-deploy template
+  ...
+
+  # configurations for external postgres instance
+  postgres:
+    enabled: false
+    ...
+
+customSecrets:
+  enabled: true
+  admin:
+    enabled: true
+    password: mysuperlongpassword
+    secretName: my-admin-password
+  secretKey:
+    enabled: true
+    key: supersecuresecretkey
+    secretName: my-awx-secret-key
+  ingressTls:
+    enabled: true
+    selfSignedCert: true
+    key: unset
+    certificate: unset
+  routeTls:
+    enabled: false
+    key: <contentoftheprivatekey>
+    certificate: <contentofthepublickey>
+  ldapCacert:
+    enabled: false
+    crt: <contentofmybundlecacrt>
+  ldap:
+    enabled: true
+    password: yourldapdnpassword
+  bundleCacert:
+    enabled: false
+    crt: <contentofmybundlecacrt>
+  eePullCredentials:
+    enabled: false
+    url: unset
+    username: unset
+    password: unset
+    sslVerify: true
+    secretName: my-ee-pull-credentials
+  cpPullCredentials:
+    enabled: false
+    dockerconfig:
+      - registry: https://index.docker.io/v1/
+        username: unset
+        password: unset
+    secretName: my-cp-pull-credentials
+```
+
 ### customVolumes
 
 #### Persistent Volume for databases postgres
@@ -427,6 +474,39 @@ Below the addition variables to customize the secret configuration.
 | `customVolumes.projects.accessModes` | Volume access mode | `ReadWriteOnce` |
 | `customVolumes.postgres.storageClassName` | PersistentVolume storage class name | `<resourcename>-projects-volume` |
 
+The `customVolumes` section simplifies the creation of Persistent Volumes used when you want to store your databases and projects files on the cluster's Node. Since their backends are `hostPath`, the size specified are just like a label and there is no actual capacity limitation.
+
+You have to prepare directories for these volumes. For example:
+
+```bash
+sudo mkdir -p /data/postgres-13
+sudo mkdir -p /data/projects
+sudo chmod 755 /data/postgres-13
+sudo chown 1000:0 /data/projects
+```
+
+Example:
+
+```yaml
+AWX:
+  # enable use of awx-deploy template
+  ...
+
+  # configurations for external postgres instance
+  postgres:
+    enabled: false
+    ...
+
+customVolumes:
+  postgres:
+    enabled: true
+    hostPath: /data/postgres-13
+  projects:
+    enabled: true
+    hostPath: /data/projects
+    size: 1Gi
+```
+
 ## Contributing
 
 ### Adding abstracted sections
@@ -435,12 +515,4 @@ Where possible, defer to `AWX.spec` configs before applying the abstracted confi
 
 ### Building and Testing
 
-This chart is built using the Makefile in the [awx-operator repo](https://github.com/ansible/awx-operator). Clone the repo and run `make helm-chart`. This will create the awx-operator chart in the `charts/awx-operator` directory. In this process, the contents of the `.helm/starter` directory will be added to the chart.
-
-## Chart Publishing
-
-The chart is currently hosted on the gh-pages branch of the repo. During the release pipeline, the `index.yaml` stored in that branch is generated with helm chart entries from all valid tags. We are currently unable to use the `chart-releaser` pipeline due to the fact that the complete helm chart is not committed to the repo and is instead built during the release process. Therefore, the cr action is unable to compare against previous versions.
-
-Instead of CR, we use `helm repo index` to generate an index from all locally pulled chart versions. Since we build from scratch every time, the timestamps of all entries will be updated. This could be improved by using yq or something similar to detect which tags are already in the index.yaml file, and only merge in tags that are not present.
-
-Not using CR could be addressed in the future by keeping the chart built as a part of releases, as long as CR compares the chart to previous release packages rather than previous commits. If the latter is the case, then we would not have the necessary history for comparison.
+This chart is built using the Makefile in the [awx-operator repo](https://github.com/ansible/awx-operator). Clone the repo and run `make helm-chart-generate`. This will create the awx-operator chart in the `charts/awx-operator` directory. In this process, the contents of the `.helm/starter` directory will be added to the chart.
