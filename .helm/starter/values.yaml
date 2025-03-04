@@ -18,4 +18,6 @@ AWX:
     sslmode: prefer
     type: unmanaged
 
-controller: {}
+operator-controller: {}
+
+operator-controller-containers: {}
