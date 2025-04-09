@@ -186,48 +186,48 @@ AWX:
     enabled: false
     ...
 
-  customSecrets:
+customSecrets:
+  enabled: true
+  admin:
     enabled: true
-    admin:
-      enabled: true
-      password: mysuperlongpassword
-      secretName: my-admin-password
-    secretKey:
-      enabled: true
-      key: supersecuresecretkey
-      secretName: my-awx-secret-key
-    ingressTls:
-      enabled: true
-      selfSignedCert: true
-      key: unset
-      certificate: unset
-    routeTls:
-      enabled: false
-      key: <contentoftheprivatekey>
-      certificate: <contentofthepublickey>
-    ldapCacert:
-      enabled: false
-      crt: <contentofmybundlecacrt>
-    ldap:
-      enabled: true
-      password: yourldapdnpassword
-    bundleCacert:
-      enabled: false
-      crt: <contentofmybundlecacrt>
-    eePullCredentials:
-      enabled: false
-      url: unset
-      username: unset
-      password: unset
-      sslVerify: true
-      secretName: my-ee-pull-credentials
-    cpPullCredentials:
-      enabled: false
-      dockerconfig:
-        - registry: https://index.docker.io/v1/
-          username: unset
-          password: unset
-      secretName: my-cp-pull-credentials
+    password: mysuperlongpassword
+    secretName: my-admin-password
+  secretKey:
+    enabled: true
+    key: supersecuresecretkey
+    secretName: my-awx-secret-key
+  ingressTls:
+    enabled: true
+    selfSignedCert: true
+    key: unset
+    certificate: unset
+  routeTls:
+    enabled: false
+    key: <contentoftheprivatekey>
+    certificate: <contentofthepublickey>
+  ldapCacert:
+    enabled: false
+    crt: <contentofmybundlecacrt>
+  ldap:
+    enabled: true
+    password: yourldapdnpassword
+  bundleCacert:
+    enabled: false
+    crt: <contentofmybundlecacrt>
+  eePullCredentials:
+    enabled: false
+    url: unset
+    username: unset
+    password: unset
+    sslVerify: true
+    secretName: my-ee-pull-credentials
+  cpPullCredentials:
+    enabled: false
+    dockerconfig:
+      - registry: https://index.docker.io/v1/
+        username: unset
+        password: unset
+    secretName: my-cp-pull-credentials
 ```
 
 ### Custom volumes
