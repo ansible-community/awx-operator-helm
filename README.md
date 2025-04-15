@@ -392,7 +392,7 @@ Below the addition variables to customize the secret configuration.
 | `customSecrets.cpPullCredentials.dockerconfig[].password` | Password to connect with | - |
 | `customSecrets.cpPullCredentials.secretName` |  Name of secret for `image_pull_secrets`| `<resoucename>-cp-pull-credentials` |
 
-The `customSecrets` section simplifies the creation of our custom secrets used during AWX deployment. Supplying the passwords this way is not recommended for production use, but may be helpful for initial PoC.
+The `customSecrets` section simplifies the creation of our custom secrets used during AWX deployment. Supplying the passwords this way is not recommended for public-facing workloads, but may be helpful for initial PoC.
 
 If enabled, the configs provided will automatically used to create the respective secrets and linked at the CR spec level. For proper secret management, the sensitive values can be passed in at the command line rather than specified in code. Use the `--set` argument with `helm install`.
 
