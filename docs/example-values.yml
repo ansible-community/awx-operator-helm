@@ -1,6 +1,5 @@
 # AWX Operator Configuration
 # This file defines the configuration for deploying AWX using the awx-operator.
-# Update values as needed for your environment before publishing to the main branch.
 
 AWX:
   enabled: true
