@@ -1,0 +1,48 @@
+# AWX Operator Configuration
+# This file defines the configuration for deploying AWX using the awx-operator.
+
+AWX:
+  enabled: true
+  name: awx
+  spec:
+    admin_user: admin
+    bundle_cacert_secret: bundle-custom-certs
+    ee_images:
+      - name: awx-ee
+        image: abc.net/ansible/awx-ee:latest
+      - name: kubevirt-awx-ee
+        image: abc.net/kubevirt-awx-ee:latest
+    control_plane_ee_image: abc.net/ansible/awx-ee:24.6.1
+    init_container_image: abc.net/ansible/awx-ee
+    init_container_image_version: 24.6.1
+    image: abc.net/ansible/awx
+    image_version: latest
+    postgres_image: abc.net/ansible/postgres
+    postgres_image_version: latest
+    redis_image: abc.net/ansible/redis
+    redis_image_version: latest
+    image_pull_secret: img-pull-secret
+    postgres_resource_requirements: null
+    postgres_storage_class: cephfs
+    postgres_storage_requirements:
+      requests:
+        storage: 25Gi
+    replicas: 2
+    service_type: ClusterIP
+
+# Operator controller container images
+operator-controller-containers:
+  awx-manager:
+    image: abc.net/ansible/awx-operator:latest
+  kube-rbac-proxy:
+    image: abc.net/ansible/kube-rbac-proxy:latest
+    securityContext:
+      runAsNonRoot: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+
+# Service account configuration
+serviceAccount:
+  imagePullSecrets:
+    - name: img-pull-secret
