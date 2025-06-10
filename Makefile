@@ -172,6 +172,9 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 	done
 	echo '{{- end -}}' >> charts/$(CHART_NAME)/templates/operator-controller/_operator-controller.tpl
 
+	@echo "== add if-condition to RBAC resources=="
+	for i in charts/$(CHART_NAME)/raw-files/*role*; do echo "{{- end }}" >> "$$i";done
+	for i in charts/$(CHART_NAME)/raw-files/*role*; do $(SED_I) '1 i{{- if .Values.rbac.create }}' "$$i";done
 
 	# move all custom resource definitions to crds folder
 	mkdir charts/$(CHART_NAME)/crds

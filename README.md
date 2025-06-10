@@ -507,6 +507,24 @@ customVolumes:
     size: 1Gi
 ```
 
+### RBAC resources
+
+This chart creates the required RBAC resources (ClusterRole, ClusterRoleBinding,
+Role, RoleBinding) for the AWX operator to work.
+
+In case you are missing the necessary permissions to create those resources
+yourself, you can disable their creation using the following settings:
+
+```yaml
+rbac:
+  create: false
+```
+
+The chart will no longer create these resources. As they are required for the
+proper operation of the operator, you need to make sure they are present. For
+instance, have a user with administrative permissions install them in the
+cluster for you.
+
 ## Contributing
 
 ### Adding abstracted sections
