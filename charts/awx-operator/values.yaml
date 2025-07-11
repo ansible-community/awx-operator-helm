@@ -18,6 +18,9 @@ AWX:
     sslmode: prefer
     type: unmanaged
 
+rbac:
+  create: true
+
 operator-controller: {}
 
 operator-controller-containers: {}
