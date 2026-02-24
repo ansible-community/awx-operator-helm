@@ -87,7 +87,8 @@ def main(args: Args) -> None:
             "clone",
             args.repo,
             "--depth=1",
-            "-c advice.detachedHead=false",
+            "-c",
+            "advice.detachedHead=false",
         ]
         if args.branch is not None:
             cmd.append(f"--branch={args.branch}")
