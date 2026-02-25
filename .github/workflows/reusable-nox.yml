@@ -12,7 +12,7 @@ jobs:
             matrix:
                 include:
                 - session: build
-                  python-versions: "3.11"
+                  python-versions: "3.12"
         name: "Run nox ${{ matrix.session }} session"
         steps:
         - name: Check out repo
