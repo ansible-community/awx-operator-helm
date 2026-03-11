@@ -12,7 +12,7 @@ ARCHX := $(shell uname -m | sed -e 's/amd64/x86_64/' -e 's/aarch64/arm64/')
 
 # Operator configuration variables
 IMAGE_TAG_BASE ?= quay.io/ansible/awx-operator
-KUBE_RBAC_PROXY_IMAGE ?= registry.k8s.io/kubebuilder/kube-rbac-proxy:v0.15.0
+KUBE_RBAC_PROXY_IMAGE ?= quay.io/brancz/kube-rbac-proxy:v0.15.0
 
 # Helm variables
 CHART_NAME ?= awx-operator
