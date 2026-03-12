@@ -12,6 +12,7 @@ ARCHX := $(shell uname -m | sed -e 's/amd64/x86_64/' -e 's/aarch64/arm64/')
 
 # Operator configuration variables
 IMAGE_TAG_BASE ?= quay.io/ansible/awx-operator
+KUBE_RBAC_PROXY_IMAGE ?= quay.io/brancz/kube-rbac-proxy:v0.15.0
 
 # Helm variables
 CHART_NAME ?= awx-operator
@@ -145,6 +146,11 @@ helm-chart-generate: kustomize helm kubectl-slice yq charts
 		$(KUBECTL_SLICE) --input-file=- \
 			--output-dir=charts/$(CHART_NAME)/raw-files \
 			--sort-by-kind
+
+	@echo "== Patch kube-rbac-proxy image in generated deployment =="
+	for file in charts/$(CHART_NAME)/raw-files/deployment-*-controller-manager.yaml; do\
+		$(YQ) -i '(.spec.template.spec.containers[] | select(.name == "kube-rbac-proxy")).image = "$(KUBE_RBAC_PROXY_IMAGE)"' $${file};\
+	done
 
 	@echo "== Build Templates and CRDS =="
 	# Delete metadata.namespace, release namespace will be automatically inserted by helm
