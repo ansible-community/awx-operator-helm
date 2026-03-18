@@ -9,7 +9,7 @@ updates:
     schedule:
       interval: "weekly"
     labels:
-      - "component:docs"
+      - "docs"
       - "dependencies"
   - package-ecosystem: "github-actions"
     directory: "/"
