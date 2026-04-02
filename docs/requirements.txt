@@ -10,7 +10,7 @@ beautifulsoup4==4.14.3
     #   mkdocs-htmlproofer-plugin
 cairocffi==1.7.1
     # via cairosvg
-cairosvg==2.8.2
+cairosvg==2.9.0
     # via mkdocs-ansible
 certifi==2026.1.4
     # via requests
@@ -21,7 +21,9 @@ cffi==2.0.0
 charset-normalizer==3.4.4
     # via requests
 click==8.3.1
-    # via mkdocs
+    # via
+    #   mkdocs
+    #   properdocs
 colorama==0.4.6
     # via mkdocs-material
 csscompressor==0.9.5
@@ -33,7 +35,9 @@ defusedxml==0.7.1
 dnspython==2.8.0
     # via linkchecker
 ghp-import==2.1.0
-    # via mkdocs
+    # via
+    #   mkdocs
+    #   properdocs
 griffelib==2.0.0
     # via mkdocstrings-python
 hjson==3.1.0
@@ -50,6 +54,7 @@ jinja2==3.1.6
     #   mkdocs-macros-plugin
     #   mkdocs-material
     #   mkdocstrings
+    #   properdocs
 jsmin==3.0.1
     # via mkdocs-minify-plugin
 linkchecker==10.6.0
@@ -62,6 +67,7 @@ markdown==3.10.2
     #   mkdocs-htmlproofer-plugin
     #   mkdocs-material
     #   mkdocstrings
+    #   properdocs
     #   pymdown-extensions
 markdown-exec==1.12.1
     # via mkdocs-ansible
@@ -73,6 +79,7 @@ markupsafe==3.0.3
     #   mkdocs
     #   mkdocs-autorefs
     #   mkdocstrings
+    #   properdocs
 mergedeep==1.3.4
     # via
     #   mkdocs
@@ -87,13 +94,13 @@ mkdocs==1.6.1
     #   mkdocs-material
     #   mkdocs-minify-plugin
     #   mkdocstrings
-mkdocs-ansible==25.6.2
+mkdocs-ansible==26.4.0
     # via -r requirements.in
 mkdocs-autorefs==1.4.4
     # via
     #   mkdocstrings
     #   mkdocstrings-python
-mkdocs-gen-files==0.6.0
+mkdocs-gen-files==0.6.1
     # via mkdocs-ansible
 mkdocs-get-deps==0.2.0
     # via mkdocs
@@ -101,7 +108,7 @@ mkdocs-htmlproofer-plugin==1.5.0
     # via mkdocs-ansible
 mkdocs-macros-plugin==1.5.0
     # via mkdocs-ansible
-mkdocs-material==9.7.5
+mkdocs-material==9.7.6
     # via mkdocs-ansible
 mkdocs-material-extensions==1.3.1
     # via
@@ -119,18 +126,24 @@ packaging==26.0
     # via
     #   mkdocs
     #   mkdocs-macros-plugin
+    #   properdocs
 paginate==0.5.7
     # via mkdocs-material
 pathspec==1.0.4
     # via
     #   mkdocs
     #   mkdocs-macros-plugin
+    #   properdocs
 pillow==12.1.1
     # via
     #   cairosvg
     #   mkdocs-ansible
 platformdirs==4.9.2
-    # via mkdocs-get-deps
+    # via
+    #   mkdocs-get-deps
+    #   properdocs
+properdocs==1.6.7
+    # via mkdocs-gen-files
 pycparser==3.0
     # via cffi
 pygments==2.19.2
@@ -150,10 +163,13 @@ pyyaml==6.0.3
     #   mkdocs
     #   mkdocs-get-deps
     #   mkdocs-macros-plugin
+    #   properdocs
     #   pymdown-extensions
     #   pyyaml-env-tag
 pyyaml-env-tag==1.1
-    # via mkdocs
+    # via
+    #   mkdocs
+    #   properdocs
 requests==2.32.5
     # via
     #   linkchecker
@@ -177,7 +193,9 @@ typing-extensions==4.15.0
 urllib3==2.6.3
     # via requests
 watchdog==6.0.0
-    # via mkdocs
+    # via
+    #   mkdocs
+    #   properdocs
 webencodings==0.5.1
     # via
     #   cssselect2
