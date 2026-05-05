@@ -25,7 +25,11 @@ click==8.3.1
     #   mkdocs
     #   properdocs
 colorama==0.4.6
-    # via mkdocs-material
+    # via
+    #   click
+    #   mkdocs
+    #   mkdocs-material
+    #   properdocs
 csscompressor==0.9.5
     # via mkdocs-minify-plugin
 cssselect2==0.9.0
@@ -95,7 +99,7 @@ mkdocs==1.6.1
     #   mkdocs-minify-plugin
     #   mkdocstrings
 mkdocs-ansible==26.4.0
-    # via -r requirements.in
+    # via -r docs/requirements.in
 mkdocs-autorefs==1.4.4
     # via
     #   mkdocstrings
@@ -134,8 +138,9 @@ pathspec==1.0.4
     #   mkdocs
     #   mkdocs-macros-plugin
     #   properdocs
-pillow==12.1.1
+pillow==12.2.0
     # via
+    #   -r docs/requirements.in
     #   cairosvg
     #   mkdocs-ansible
 platformdirs==4.9.2
@@ -144,7 +149,7 @@ platformdirs==4.9.2
     #   properdocs
 properdocs==1.6.7
     # via mkdocs-gen-files
-pycparser==3.0
+pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
 pygments==2.19.2
     # via mkdocs-material
