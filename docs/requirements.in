@@ -2,3 +2,4 @@
 
 mkdocs-ansible<27.0
 pillow>=12.2.0 # https://github.com/advisories/GHSA-pwv6-vv43-88gr
+urllib3>=2.7.0 # https://github.com/advisories/GHSA-mf9v-mfxr-j63j
