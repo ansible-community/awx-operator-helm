@@ -195,8 +195,10 @@ tinycss2==1.5.1
     #   cssselect2
 typing-extensions==4.15.0
     # via beautifulsoup4
-urllib3==2.6.3
-    # via requests
+urllib3==2.7.0
+    # via
+    #   -r docs/requirements.in
+    #   requests
 watchdog==6.0.0
     # via
     #   mkdocs
