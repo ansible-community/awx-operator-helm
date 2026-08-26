@@ -2,9 +2,9 @@
 #    uv pip compile --universal --output-file docs/requirements.txt docs/requirements.in
 babel==2.18.0
     # via mkdocs-material
-backrefs==6.2
+backrefs==8.0
     # via mkdocs-material
-beautifulsoup4==4.14.3
+beautifulsoup4==4.15.0
     # via
     #   linkchecker
     #   mkdocs-htmlproofer-plugin
@@ -12,20 +12,24 @@ cairocffi==1.7.1
     # via cairosvg
 cairosvg==2.9.0
     # via mkdocs-ansible
-certifi==2026.1.4
+certifi==2026.7.22
     # via requests
-cffi==2.0.0
+cffi==2.1.1
     # via
     #   cairocffi
     #   mkdocs-ansible
-charset-normalizer==3.4.4
+charset-normalizer==3.5.1
     # via requests
-click==8.3.1
+click==8.4.2
     # via
     #   mkdocs
     #   properdocs
 colorama==0.4.6
-    # via mkdocs-material
+    # via
+    #   click
+    #   mkdocs
+    #   mkdocs-material
+    #   properdocs
 csscompressor==0.9.5
     # via mkdocs-minify-plugin
 cssselect2==0.9.0
@@ -38,7 +42,7 @@ ghp-import==2.1.0
     # via
     #   mkdocs
     #   properdocs
-griffelib==2.0.0
+griffelib==2.2.0
     # via mkdocstrings-python
 hjson==3.1.0
     # via
@@ -46,7 +50,7 @@ hjson==3.1.0
     #   super-collections
 htmlmin2==0.1.13
     # via mkdocs-minify-plugin
-idna==3.11
+idna==3.19
     # via requests
 jinja2==3.1.6
     # via
@@ -59,7 +63,7 @@ jsmin==3.0.1
     # via mkdocs-minify-plugin
 linkchecker==10.6.0
     # via mkdocs-ansible
-markdown==3.10.2
+markdown==3.10.3
     # via
     #   markdown-include
     #   mkdocs
@@ -69,7 +73,7 @@ markdown==3.10.2
     #   mkdocstrings
     #   properdocs
     #   pymdown-extensions
-markdown-exec==1.12.1
+markdown-exec==1.12.3
     # via mkdocs-ansible
 markdown-include==0.8.1
     # via mkdocs-ansible
@@ -95,20 +99,20 @@ mkdocs==1.6.1
     #   mkdocs-minify-plugin
     #   mkdocstrings
 mkdocs-ansible==26.4.0
-    # via -r requirements.in
+    # via -r docs/requirements.in
 mkdocs-autorefs==1.4.4
     # via
     #   mkdocstrings
     #   mkdocstrings-python
 mkdocs-gen-files==0.6.1
     # via mkdocs-ansible
-mkdocs-get-deps==0.2.0
+mkdocs-get-deps==0.2.2
     # via mkdocs
 mkdocs-htmlproofer-plugin==1.5.0
     # via mkdocs-ansible
 mkdocs-macros-plugin==1.5.0
     # via mkdocs-ansible
-mkdocs-material==9.7.6
+mkdocs-material==9.7.7
     # via mkdocs-ansible
 mkdocs-material-extensions==1.3.1
     # via
@@ -116,40 +120,40 @@ mkdocs-material-extensions==1.3.1
     #   mkdocs-material
 mkdocs-minify-plugin==0.8.0
     # via mkdocs-ansible
-mkdocstrings==1.0.3
+mkdocstrings==1.0.6
     # via
     #   mkdocs-ansible
     #   mkdocstrings-python
-mkdocstrings-python==2.0.3
+mkdocstrings-python==2.0.7
     # via mkdocs-ansible
-packaging==26.0
+packaging==26.3
     # via
     #   mkdocs
     #   mkdocs-macros-plugin
     #   properdocs
 paginate==0.5.7
     # via mkdocs-material
-pathspec==1.0.4
+pathspec==1.1.1
     # via
     #   mkdocs
     #   mkdocs-macros-plugin
     #   properdocs
 pillow==12.3.0
     # via
-    #   -r requirements.in
+    #   -r docs/requirements.in
     #   cairosvg
     #   mkdocs-ansible
-platformdirs==4.9.2
+platformdirs==4.11.4
     # via
     #   mkdocs-get-deps
     #   properdocs
 properdocs==1.6.7
     # via mkdocs-gen-files
-pycparser==3.0
+pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
-pygments==2.19.2
+pygments==2.21.0
     # via mkdocs-material
-pymdown-extensions==10.21
+pymdown-extensions==11.0.2
     # via
     #   markdown-exec
     #   mkdocs-ansible
@@ -171,7 +175,7 @@ pyyaml-env-tag==1.1
     # via
     #   mkdocs
     #   properdocs
-requests==2.32.5
+requests==2.34.2
     # via
     #   linkchecker
     #   mkdocs-htmlproofer-plugin
@@ -181,7 +185,7 @@ six==1.17.0
     # via python-dateutil
 soupsieve==2.9.2
     # via
-    #   -r requirements.in
+    #   -r docs/requirements.in
     #   beautifulsoup4
 super-collections==0.6.2
     # via mkdocs-macros-plugin
@@ -191,17 +195,17 @@ tinycss2==1.5.1
     # via
     #   cairosvg
     #   cssselect2
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via beautifulsoup4
 urllib3==2.7.0
     # via
-    #   -r requirements.in
+    #   -r docs/requirements.in
     #   requests
 watchdog==6.0.0
     # via
     #   mkdocs
     #   properdocs
-webencodings==0.5.1
+webencodings==0.6.1
     # via
     #   cssselect2
     #   tinycss2
