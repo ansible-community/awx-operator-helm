@@ -134,7 +134,7 @@ pathspec==1.1.1
     #   mkdocs
     #   mkdocs-macros-plugin
     #   properdocs
-pillow==12.3.0
+pillow==13.0.0
     # via
     #   -r requirements.in
     #   cairosvg
@@ -179,7 +179,7 @@ requests==2.34.2
     #   mkdocs-material
 six==1.17.0
     # via python-dateutil
-soupsieve==2.10
+soupsieve==3.0.3
     # via
     #   -r requirements.in
     #   beautifulsoup4
