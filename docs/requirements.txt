@@ -181,8 +181,6 @@ requests==2.34.2
     #   mkdocs-htmlproofer-plugin
     #   mkdocs-macros-plugin
     #   mkdocs-material
-six==1.17.0
-    # via python-dateutil
 soupsieve==4.0.1
     # via
     #   -r docs/requirements.in
