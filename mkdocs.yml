@@ -1,6 +1,6 @@
 ---
 site_name: AWX Operator Helm Chart
-site_url: https://awx-operator.readthedocs.io/
+site_url: https://docs.ansible.com/projects/awx-operator/en/latest/
 repo_url: https://github.com/ansible-community/awx-operator-helm
 edit_uri: blob/devel/docs/
 docs_dir: docs
