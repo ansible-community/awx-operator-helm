@@ -8,12 +8,10 @@ def build(session: nox.Session):
     """
     session.install(
         "-r",
-        "docs/requirements.in",
-        "-c",
         "docs/requirements.txt",
     )
     session.run(
-        "mkdocs",
+        "zensical",
         "build",
         "--strict",
         *session.posargs,

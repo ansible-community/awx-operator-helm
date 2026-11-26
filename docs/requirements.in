@@ -1,6 +1,0 @@
-# This requirements file is used for AWX Operator latest doc builds.
-
-mkdocs-ansible<27.0
-pillow>=13.0.0 # https://github.com/advisories/GHSA-pwv6-vv43-88gr
-urllib3>=2.8.0 # https://github.com/advisories/GHSA-mf9v-mfxr-j63j
-soupsieve>=4.1.3 # https://github.com/advisories/GHSA-836r-79rf-4m37
